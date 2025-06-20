@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
+import Category from './components/category/Category';
+import Account from './components/account/Account';
 import Users from './components/Users';
 import Statistics from './components/Statistics';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
+import Login from './components/Login';
+import Register from './components/Register';
+
+import { isAuthenticated } from './middleware/AuthContext.jsx';
+
 import './styles.css';
 
 function App() {
+  
+  const [isLoggedIn, setLoggedIn] = useState(true);
+
   const [collapsed, setCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState('products');
   const [settings, setSettings] = useState({
@@ -18,14 +28,10 @@ function App() {
     emailNotifications: true,
     desktopNotifications: false
   });
+  
 
   // Áp dụng chế độ tối khi thay đổi cài đặt
   useEffect(() => {
-    if (settings.darkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
     
     // Áp dụng màu chủ đạo
     document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
@@ -52,6 +58,9 @@ function App() {
   }, []);
   
   const renderPage = () => {
+
+    console.log(currentPage)
+
     switch (currentPage) {
       case 'products':
         return <Dashboard settings={settings} />;
@@ -59,23 +68,35 @@ function App() {
         return <Users settings={settings} />;
       case 'statistics':
         return <Statistics settings={settings} />;
+      case 'accounts':
+        return <Account settings={settings} />;
+      case 'category':
+        return <Category settings={settings} />;
       case 'settings':
         return <Settings settings={settings} updateSettings={updateSettings} />;
+      case 'register':
+        return <Register settings={settings} setCurrentPage={setCurrentPage} />;
       default:
-        return <Dashboard settings={settings} />;
+        return <Login settings={settings} setCurrentPage={setCurrentPage} />;
     }
   };
-  
+
+
   return (
     <div className={`app-container ${settings.darkMode ? 'dark-theme' : 'light-theme'}`}>
-      <Sidebar 
+
+      {(currentPage != "register") && (
+
+        <Sidebar 
         collapsed={collapsed} 
         setCollapsed={setCollapsed} 
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         settings={settings}
+        isLoggedIn={isLoggedIn}
       />
-      <div className={`main-content ${collapsed ? 'expanded' : ''}`}>
+      )}
+      <div className={`main-content ${collapsed ? 'expanded' : ''}`} style={{ marginLeft: currentPage == "register" ? 0 : undefined }}>
         {renderPage()}
       </div>
     </div>

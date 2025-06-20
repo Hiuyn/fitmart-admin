@@ -2,10 +2,14 @@ import React from 'react';
 
 const Sidebar = ({ collapsed, setCollapsed, currentPage, setCurrentPage }) => {
   const menuItems = [
-    { id: 'products', name: 'Sản phẩm', icon: 'fa-box' },
-    { id: 'users', name: 'Người dùng', icon: 'fa-users' },
     { id: 'statistics', name: 'Thống kê', icon: 'fa-chart-bar' },
-    { id: 'settings', name: 'Cài đặt', icon: 'fa-cog' }
+    { id: 'order', name: 'Order', icon: 'fa-shopping-cart' },
+    { id: 'users', name: 'Người dùng', icon: 'fa-user' },
+    { id: 'accounts', name: 'Tài khoản', icon: 'fa-users' },
+    { id: 'products', name: 'Sản phẩm', icon: 'fa-box' },
+    { id: 'category', name: 'Danh mục', icon: 'fa-list ' },
+    { id: 'settings', name: 'Cài đặt', icon: 'fa-cog' },
+    { id: 'register', name: 'Đăng xuất', icon: 'fa-sign-out' },
   ];
   
   return (

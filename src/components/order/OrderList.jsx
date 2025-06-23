@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 
-const UserList = ({ users, onEdit, onDelete }) => {
+const OrderList = ({ orders, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND' 
+    }).format(price);
+  };
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -13,8 +20,8 @@ const UserList = ({ users, onEdit, onDelete }) => {
     }
   };
 
-  const sortedUsers = [...users].sort((a, b) => {
-    if (sortField === 'id') {
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (sortField === 'price' || sortField === 'stock' || sortField === 'id') {
       return sortDirection === 'asc' 
         ? a[sortField] - b[sortField]
         : b[sortField] - a[sortField];
@@ -34,30 +41,30 @@ const UserList = ({ users, onEdit, onDelete }) => {
   };
 
   return (
-    <div className="user-list">
+    <div className="product-list">
       <table>
         <thead>
-          <tr>
+          <tr className='head'>
             <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
-            <th className='user-icon-row'>Ảnh đại diện</th>
-            <th onClick={() => handleSort('name')}>Họ tên {getSortIcon('name')}</th>
-            <th onClick={() => handleSort('email')}>Email {getSortIcon('email')}</th>
-            <th className='role-row' onClick={() => handleSort('role')}>Vai trò {getSortIcon('role')}</th>
-            {/* <th className='status-row' onClick={() => handleSort('status')}>Trạng thái {getSortIcon('status')}</th> */}
+            <th className='image-row'>Hình ảnh</th>
+            <th onClick={() => handleSort('name')}>Tên giỏ hàng {getSortIcon('name')}</th>
+            <th onClick={() => handleSort('category')}>Danh mục {getSortIcon('category')}</th>
+            <th onClick={() => handleSort('price')}>Giá {getSortIcon('price')}</th>
+            <th onClick={() => handleSort('stock')}>Tồn kho {getSortIcon('stock')}</th>
             <th className='action-row'>Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          {sortedUsers.length > 0 ? (
-            sortedUsers.map(user => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
+          {sortedOrders.length > 0 ? (
+            sortedOrders.map(order => (
+              <tr key={order.id}>
+                <td>{order.id}</td>
                 <td>
-                  {user.avatar ? (
+                  {order.avatar ? (
                     <img 
-                      src={user.avatar} 
-                      alt={user.name} 
-                      className="user-avatar"
+                      src={order.avatar} 
+                      alt={order.name} 
+                      className="order-avatar"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.parentNode.innerHTML = '<div class="avatar-placeholder"><i class="fas fa-question"></i></div>';
@@ -69,28 +76,20 @@ const UserList = ({ users, onEdit, onDelete }) => {
                     </div>
                   )}
                 </td>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
+                <td>{order.name}</td>
+                <td>{order.email}</td>
                 <td className='role'>
-                  <div>
-                    <span className={`role-badge ${user.role.toLowerCase()}`}>
-                      {user.role}
-                    </span> 
-                  </div>
+                  {order.role}
                 </td>
-                {/* <td className='status'>
-                  <div>
-                    <span className={`status-badge ${user.status.toLowerCase()}`}>
-                      {user.status}
-                    </span>
-                  </div>
-                </td> */}
+                <td className='status'>
+                  {order.status}
+                </td>
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(user)}>
+                    <button className="edit-button" onClick={() => onEdit(order)}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(user)}>
+                    <button className="delete-button" onClick={() => onDelete(order)}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>
@@ -108,4 +107,4 @@ const UserList = ({ users, onEdit, onDelete }) => {
   );
 };
 
-export default UserList; 
+export default OrderList; 

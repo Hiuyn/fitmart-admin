@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
 
-const ProductList = ({ products, onEdit, onDelete }) => {
+const CategoryList = ({ categories, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND' 
-    }).format(price);
-  };
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -20,8 +13,8 @@ const ProductList = ({ products, onEdit, onDelete }) => {
     }
   };
 
-  const sortedProducts = [...products].sort((a, b) => {
-    if (sortField === 'price' || sortField === 'stock' || sortField === 'id') {
+  const sortedCategories = [...categories].sort((a, b) => {
+    if (sortField === 'description' || sortField === 'stock' || sortField === 'id') {
       return sortDirection === 'asc' 
         ? a[sortField] - b[sortField]
         : b[sortField] - a[sortField];
@@ -44,46 +37,30 @@ const ProductList = ({ products, onEdit, onDelete }) => {
     <div className="product-list">
       <table>
         <thead>
-          <tr>
+          <tr className='head'>
             <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
-            <th className='image-row'>Hình ảnh</th>
-            <th onClick={() => handleSort('name')}>Tên sản phẩm {getSortIcon('name')}</th>
-            <th onClick={() => handleSort('category')}>Danh mục {getSortIcon('category')}</th>
-            <th onClick={() => handleSort('price')}>Giá {getSortIcon('price')}</th>
-            <th onClick={() => handleSort('stock')}>Tồn kho {getSortIcon('stock')}</th>
+            <th onClick={() => handleSort('title')}>Tên danh mục {getSortIcon('title')}</th>
+            <th onClick={() => handleSort('description')}>Mô tả {getSortIcon('description')}</th>
             <th className='action-row'>Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          {sortedProducts.length > 0 ? (
-            sortedProducts.map(product => (
-              <tr key={product.id}>
-                <td>{product.id}</td>
-                <td>
-                  <img 
-                    src={product.image} 
-                    alt={product.name} 
-                    className="product-thumbnail"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/512x512/plain/object_cube.png';
-                    }}
-                  />
-                </td>
+          {sortedCategories.length > 0 ? (
+            sortedCategories.map(category => (
+              <tr key={category.id}>
+                <td>{category.id}</td>
                 <td>
                   <div className='product'>
-                    {product.name}
+                    {category.title}
                   </div>
                 </td>
-                <td>{product.category}</td>
-                <td>{formatPrice(product.price)}</td>
-                <td>{product.stock}</td>
+                <td>{category.description}</td>
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(product)}>
+                    <button className="edit-button" onClick={() => onEdit(category)}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(product)}>
+                    <button className="delete-button" onClick={() => onDelete(category)}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>
@@ -101,4 +78,4 @@ const ProductList = ({ products, onEdit, onDelete }) => {
   );
 };
 
-export default ProductList; 
+export default CategoryList; 

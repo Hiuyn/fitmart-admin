@@ -51,7 +51,7 @@ const { TabPane } = Tabs;
 //   };
 // });
 
-const ProductForm = ({ product, onSave, onCancel }) => {
+const OrderForm = ({ order, onSave, onCancel }) => {
   const fileInputRef = useRef(null);
   
 
@@ -67,7 +67,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
   ]);
 
   const [formData, setFormData] = useState({
-    id: product ? product.id : null,
+    id: order ? order.id : null,
     name: '',
     slug: '',   //ghi nho slugify name va them thoi gian them milisecond
 
@@ -87,19 +87,19 @@ const ProductForm = ({ product, onSave, onCancel }) => {
   const [imagePreview, setImagePreview] = useState('');
 
   useEffect(() => {
-    if (product) {
+    if (order) {
       setFormData({
-        id: product.id,
-        name: product.name,
-        category: product.category,
-        price: product.price,
-        stock: product.stock,
-        description: product.description || '',
-        image: product.image
+        id: order.id,
+        name: order.name,
+        category: order.category,
+        price: order.price,
+        stock: order.stock,
+        description: order.description || '',
+        image: order.image
       });
-      setImagePreview(product.image);
+      setImagePreview(order.image);
     }
-  }, [product]);
+  }, [order]);
 
   const handleChange = (e) => {
     console.log(e.target.value)
@@ -159,11 +159,11 @@ const ProductForm = ({ product, onSave, onCancel }) => {
     const newErrors = {};
     
     if (!formData.name.trim()) {
-      newErrors.name = 'Tên sản phẩm không được để trống';
+      newErrors.name = 'Tên giỏ hàng không được để trống';
     }
 
     if (!formData.slug.trim()) {
-      newErrors.slug = 'Slug sản phẩm không được để trống';
+      newErrors.slug = 'Slug giỏ hàng không được để trống';
     }
     
     if (!formData.category.trim()) {
@@ -279,12 +279,12 @@ const ProductForm = ({ product, onSave, onCancel }) => {
   return (
     <div className="modal-overlay">
       <div className="product-form-modal" style={{width: '80%'}}>
-        <h2>{product ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h2>
+        <h2>{order ? 'Chỉnh sửa giỏ hàng' : 'Thêm giỏ hàng mới'}</h2>
         <form onSubmit={handleSubmit}>
           <Tabs defaultActiveKey="1" onChange={(key) => console.log(key)}>
-            <TabPane tab="Thông tin sản phẩm" key="1">
+            <TabPane tab="Thông tin giỏ hàng" key="1">
               <div className="form-group">
-                <label htmlFor="name">Tên sản phẩm:</label>
+                <label htmlFor="name">Tên giỏ hàng:</label>
                 <input
                   type="text"
                   id="name"
@@ -310,7 +310,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="description">Mô tả sản phẩm:</label>
+                <label htmlFor="description">Mô tả giỏ hàng:</label>
                 <textarea
                   id="description"
                   name="description"
@@ -323,7 +323,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
               </div>
               
               <div className="form-group">
-                <label>Hình ảnh sản phẩm:</label>
+                <label>Hình ảnh giỏ hàng:</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -434,7 +434,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
                   Hủy
                 </button>
                 <button type="submit" className="save-button">
-                  {product ? 'Cập nhật' : 'Thêm mới'}
+                  {order ? 'Cập nhật' : 'Thêm mới'}
                 </button>
               </div>
             </TabPane>
@@ -446,4 +446,4 @@ const ProductForm = ({ product, onSave, onCancel }) => {
   );
 };
 
-export default ProductForm;
+export default OrderForm;

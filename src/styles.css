@@ -88,7 +88,7 @@ body {
 .main-content {
   flex: 1;
   margin-left: 250px;
-  transition: margin 0.3s ease;
+  /* transition: margin 0.3s ease; */
   padding: 30px;
 }
 
@@ -157,6 +157,7 @@ body {
 }
 
 table {
+  table-layout: fixed;
   width: 100%;
   border-collapse: collapse;
 }
@@ -177,7 +178,7 @@ thead th:hover {
 
 tbody td {
   padding: 15px;
-  border-bottom: 1px solid #ecf0f1;
+  height: 100%;
 }
 
 .product-thumbnail {
@@ -187,9 +188,69 @@ tbody td {
   border-radius: 4px;
 }
 
+.product {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.id-row {
+  width: 65px;
+}
+
+.user-icon-row {
+  width: 90px;
+}
+
+.role-row {
+  width: 120px;
+}
+
+.status-row {
+  width: 140px;
+}
+
+.action-row {
+  width: 95px;
+}
+
+.image-row {
+  width: 95px;
+}
+
 .actions {
+  height: 100%;
+  align-items: center; /* vertical alignment */
+  justify-content: space-between; /* horizontal alignment */
+}
+
+.actions div {
   display: flex;
-  gap: 10px;
+  gap: 6px;
+}
+
+.role {
+  height: 100%;
+  align-items: center; /* vertical alignment */
+  justify-content: space-between; /* horizontal alignment */
+}
+
+.role div {
+  display: flex;
+  justify-content: center; /* vertical alignment */
+}
+
+.status {
+  height: 100%;
+  align-items: center; /* vertical alignment */
+  justify-content: space-between; /* horizontal alignment */
+}
+
+.status div {
+  display: flex;
+  justify-content: center; /* vertical alignment */
 }
 
 .edit-button, .delete-button {
@@ -197,17 +258,23 @@ tbody td {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  aspect-ratio: 1 / 1;
+  height: 31px;           /* or any fixed height */
+  width: auto;            /* allow width to be determined by aspect-ratio */
+  box-sizing: border-box;
 }
 
 .edit-button {
   background: #3498db;
   color: white;
 }
+.edit-button:hover { filter: brightness(90%); }
 
 .delete-button {
   background: #e74c3c;
   color: white;
 }
+.delete-button:hover { filter: brightness(90%); }
 
 .no-data {
   text-align: center;
@@ -389,6 +456,7 @@ textarea.error {
   border-radius: 15px;
   font-size: 0.8rem;
   font-weight: 500;
+  user-select: none;
 }
 
 .role-badge.admin {
@@ -669,9 +737,15 @@ body {
   border: 1px solid var(--border-color);
 }
 
-table th, table td {
+table tr {
   border-bottom: 1px solid var(--border-color);
 }
+/* 
+.actions div {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+} */
 
 /* Thêm CSS cho trang cài đặt */
 .settings {

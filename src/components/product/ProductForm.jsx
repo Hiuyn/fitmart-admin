@@ -11,7 +11,6 @@ const LuaChonTabContent = ({ tabData, handleChange }) => {
   //   setTitle(value); 
   // }
 const options = [];
-  console.log(tabData)
 
   return (
     <div>

@@ -51,7 +51,7 @@ const { TabPane } = Tabs;
 //   };
 // });
 
-const ProductForm = ({ product, onSave, onCancel }) => {
+const AccountForm = ({ account, onSave, onCancel }) => {
   const fileInputRef = useRef(null);
   
 
@@ -67,7 +67,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
   ]);
 
   const [formData, setFormData] = useState({
-    id: product ? product.id : null,
+    id: account ? account.id : null,
     name: '',
     slug: '',   //ghi nho slugify name va them thoi gian them milisecond
 
@@ -87,19 +87,19 @@ const ProductForm = ({ product, onSave, onCancel }) => {
   const [imagePreview, setImagePreview] = useState('');
 
   useEffect(() => {
-    if (product) {
+    if (account) {
       setFormData({
-        id: product.id,
-        name: product.name,
-        category: product.category,
-        price: product.price,
-        stock: product.stock,
-        description: product.description || '',
-        image: product.image
+        id: account.id,
+        name: account.name,
+        category: account.category,
+        price: account.price,
+        stock: account.stock,
+        description: account.description || '',
+        image: account.image
       });
-      setImagePreview(product.image);
+      setImagePreview(account.image);
     }
-  }, [product]);
+  }, [account]);
 
   const handleChange = (e) => {
     console.log(e.target.value)
@@ -279,7 +279,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
   return (
     <div className="modal-overlay">
       <div className="product-form-modal" style={{width: '80%'}}>
-        <h2>{product ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h2>
+        <h2>{account ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h2>
         <form onSubmit={handleSubmit}>
           <Tabs defaultActiveKey="1" onChange={(key) => console.log(key)}>
             <TabPane tab="Thông tin sản phẩm" key="1">
@@ -434,7 +434,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
                   Hủy
                 </button>
                 <button type="submit" className="save-button">
-                  {product ? 'Cập nhật' : 'Thêm mới'}
+                  {account ? 'Cập nhật' : 'Thêm mới'}
                 </button>
               </div>
             </TabPane>
@@ -446,4 +446,4 @@ const ProductForm = ({ product, onSave, onCancel }) => {
   );
 };
 
-export default ProductForm;
+export default AccountForm;

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Node.js dependencies
 node_modules/
 npm-debug.log*
@@ -20,3 +21,6 @@ build/
 .vscode/
 *.swp
 *.swo
+=======
+node_modules
+>>>>>>> 3ec93ed6b7bb5867e5fa5b034f441e3a3d79b098

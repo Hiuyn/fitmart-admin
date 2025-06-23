@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AccountList = ({ accounts, onEdit, onDelete }) => {
+const OrderList = ({ orders, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
 
@@ -20,7 +20,7 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
     }
   };
 
-  const sortedAccounts = [...accounts].sort((a, b) => {
+  const sortedOrders = [...orders].sort((a, b) => {
     if (sortField === 'price' || sortField === 'stock' || sortField === 'id') {
       return sortDirection === 'asc' 
         ? a[sortField] - b[sortField]
@@ -44,10 +44,10 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
     <div className="product-list">
       <table>
         <thead>
-          <tr className='head-account'>
+          <tr className='head'>
             <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
             <th className='image-row'>Hình ảnh</th>
-            <th onClick={() => handleSort('name')}>Tên sản phẩm {getSortIcon('name')}</th>
+            <th onClick={() => handleSort('name')}>Tên giỏ hàng {getSortIcon('name')}</th>
             <th onClick={() => handleSort('category')}>Danh mục {getSortIcon('category')}</th>
             <th onClick={() => handleSort('price')}>Giá {getSortIcon('price')}</th>
             <th onClick={() => handleSort('stock')}>Tồn kho {getSortIcon('stock')}</th>
@@ -55,16 +55,16 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {sortedAccounts.length > 0 ? (
-            sortedAccounts.map(account => (
-              <tr key={account.id}>
-                <td>{account.id}</td>
+          {sortedOrders.length > 0 ? (
+            sortedOrders.map(order => (
+              <tr key={order.id}>
+                <td>{order.id}</td>
                 <td>
-                  {account.avatar ? (
+                  {order.avatar ? (
                     <img 
-                      src={account.avatar} 
-                      alt={account.name} 
-                      className="account-avatar"
+                      src={order.avatar} 
+                      alt={order.name} 
+                      className="order-avatar"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.parentNode.innerHTML = '<div class="avatar-placeholder"><i class="fas fa-question"></i></div>';
@@ -76,20 +76,20 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
                     </div>
                   )}
                 </td>
-                <td>{account.name}</td>
-                <td>{account.email}</td>
+                <td>{order.name}</td>
+                <td>{order.email}</td>
                 <td className='role'>
-                  {account.role}
+                  {order.role}
                 </td>
                 <td className='status'>
-                  {account.status}
+                  {order.status}
                 </td>
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(account)}>
+                    <button className="edit-button" onClick={() => onEdit(order)}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(account)}>
+                    <button className="delete-button" onClick={() => onDelete(order)}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>
@@ -107,4 +107,4 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
   );
 };
 
-export default AccountList; 
+export default OrderList; 

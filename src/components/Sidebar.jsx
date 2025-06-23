@@ -1,4 +1,16 @@
 import React from 'react';
+import { Routes, Route, Link  } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+
+import Dashboard from './product/Product';
+import Category from './category/Category';
+import Account from './account/Account';
+import Order from './order/Order';
+import Users from './user/Users';
+import Statistics from './Statistics';
+import Settings from './Settings';
+import Login from './Login';
+import Register from './Register';
 
 const Sidebar = ({ collapsed, setCollapsed, currentPage, setCurrentPage }) => {
   const menuItems = [
@@ -23,13 +35,15 @@ const Sidebar = ({ collapsed, setCollapsed, currentPage, setCurrentPage }) => {
       <div className="sidebar-menu">
         <ul>
           {menuItems.map(item => (
-            <li 
-              key={item.id}
-              className={currentPage === item.id ? 'active' : ''}
-              onClick={() => setCurrentPage(item.id)}
-            >
-              <i className={`fas ${item.icon}`}></i>
-              {!collapsed && <span>{item.name}</span>}
+            <li key={item.id}>
+              <NavLink
+                to={`/${item.id === 'register' ? 'login' : item.id}`}
+                className={({ isActive }) => (isActive ? 'active' : '')}
+                style={{ color: 'white' }}
+              >
+                <i className={`fas ${item.icon}`}></i>
+                {!collapsed && <span>{item.name}</span>}
+              </NavLink>
             </li>
           ))}
         </ul>

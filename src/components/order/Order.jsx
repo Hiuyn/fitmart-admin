@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import AccountList from './AccountList';
-import AccountForm from './AccountForm';
-import DeleteConfirmation from '../../components/DeleteConfirmation';
+import OrderList from './OrderList';
+import OrderForm from './OrderForm';
+import DeleteConfirmation from '../DeleteConfirmation';
 
-const Account = () => {
+const Order = () => {
   // Dữ liệu mẫu
-  const sampleAccounts = [
+  const sampleOrders = [
     { 
-      uuid: "1",
+      uuid: "FM9a7113c1",
       user_name: "think tran",
       email: "think@gmail.com",
       avatar_url: "",
@@ -17,7 +17,7 @@ const Account = () => {
       deleted_at: null
     },
     { 
-      uuid: "2",
+      uuid: "FM9a7113c1",
       user_name: "think tran",
       email: "think@gmail.com",
       avatar_url: "",
@@ -27,7 +27,7 @@ const Account = () => {
       deleted_at: null
     },
     { 
-      uuid: "3",
+      uuid: "FM9a7113c1",
       user_name: "think tran",
       email: "think@gmail.com",
       avatar_url: "",
@@ -37,7 +37,7 @@ const Account = () => {
       deleted_at: null
     },
     { 
-      uuid: "4",
+      uuid: "FM9a7113c1",
       user_name: "think tran",
       email: "think@gmail.com",
       avatar_url: "",
@@ -47,7 +47,7 @@ const Account = () => {
       deleted_at: null
     },
     { 
-      uuid: "5",
+      uuid: "FM9a7113c1",
       user_name: "think tran",
       email: "think@gmail.com",
       avatar_url: "",
@@ -58,17 +58,17 @@ const Account = () => {
     },
   ];
 
-  const [accounts, setAccounts] = useState(sampleAccounts);
+  const [orders, setOrders] = useState(sampleOrders);
   const [editing, setEditing] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [accountToDelete, setAccountToDelete] = useState(null);
+  const [orderToDelete, setOrderToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Lọc sản phẩm theo từ khóa tìm kiếm
-  const filteredAccounts = accounts.filter(account => 
-    account.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    account.uuid.toLowerCase().includes(searchTerm.toLowerCase())
+  // Lọc giỏ hàng theo từ khóa tìm kiếm
+  const filteredOrders = orders.filter(order => 
+    order.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.uuid.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddNew = () => {
@@ -76,32 +76,32 @@ const Account = () => {
     setIsFormOpen(true);
   };
 
-  const handleEdit = (account) => {
-    setEditing(account);
+  const handleEdit = (order) => {
+    setEditing(order);
     setIsFormOpen(true);
   };
 
-  const handleDelete = (account) => {
-    setAccountToDelete(account);
+  const handleDelete = (order) => {
+    setOrderToDelete(order);
     setIsDeleteOpen(true);
   };
 
   const confirmDelete = () => {
-    if (accountToDelete) {
-      setAccounts(accounts.filter(p => p.id !== accountToDelete.id));
+    if (orderToDelete) {
+      setOrders(orders.filter(p => p.id !== orderToDelete.id));
       setIsDeleteOpen(false);
-      setAccountToDelete(null);
+      setOrderToDelete(null);
     }
   };
 
-  const handleSave = (account) => {
+  const handleSave = (order) => {
     if (editing) {
-      // Cập nhật sản phẩm
-      setAccounts(accounts.map(p => p.id === account.id ? account : p));
+      // Cập nhật giỏ hàng
+      setOrders(orders.map(p => p.id === order.id ? order : p));
     } else {
-      // Thêm sản phẩm mới với ID tự động tăng
-      const newId = Math.max(...accounts.map(p => p.id), 0) + 1;
-      setAccounts([...accounts, { ...account, id: newId }]);
+      // Thêm giỏ hàng mới với ID tự động tăng
+      const newId = Math.max(...orders.map(p => p.id), 0) + 1;
+      setOrders([...orders, { ...order, id: newId }]);
     }
     setIsFormOpen(false);
     setEditing(null);
@@ -109,13 +109,13 @@ const Account = () => {
 
   return (
     <div className="dashboard">
-      <h1>Quản lý tài khoản</h1>
+      <h1>Quản lý giỏ hàng</h1>
       
       <div className="controls">
         <div className="search-bar">
           <input 
             type="text" 
-            placeholder="Tìm kiếm sản phẩm..." 
+            placeholder="Tìm kiếm giỏ hàng..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -124,19 +124,19 @@ const Account = () => {
           </button>
         </div>
         <button className="add-button" onClick={handleAddNew}>
-          <i className="fas fa-plus"></i> Thêm sản phẩm
+          <i className="fas fa-plus"></i> Thêm giỏ hàng
         </button>
       </div>
 
-      <AccountList 
-        accounts={filteredAccounts} 
+      <OrderList 
+        orders={filteredOrders} 
         onEdit={handleEdit} 
         onDelete={handleDelete} 
       />
 
       {isFormOpen && (
-        <AccountForm 
-          account={editing} 
+        <OrderForm 
+          order={editing} 
           onSave={handleSave} 
           onCancel={() => setIsFormOpen(false)} 
         />
@@ -144,7 +144,7 @@ const Account = () => {
 
       {isDeleteOpen && (
         <DeleteConfirmation 
-          account={accountToDelete}
+          order={orderToDelete}
           onConfirm={confirmDelete}
           onCancel={() => setIsDeleteOpen(false)}
         />
@@ -153,4 +153,4 @@ const Account = () => {
   );
 };
 
-export default Account; 
+export default Order; 

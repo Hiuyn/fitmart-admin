@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 
 const Login = ({ setCurrentPage }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     // Dummy login check
-    if (username === 'admin' && password === 'password') {
+    if (email === 'admin' && password === 'password') {
       alert('Login successful!');
-      // Redirect or set auth state here
+      
     } else {
       setError('Invalid credentials');
     }
@@ -23,11 +26,11 @@ const Login = ({ setCurrentPage }) => {
       <br /><br /><br />
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Username:</label>
+          <label>Email:</label>
           <input
             type="text"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             required
           />
         </div>
@@ -44,13 +47,29 @@ const Login = ({ setCurrentPage }) => {
 
          <br />
         <div>
-          Don't have an account? <span onClick={() => setCurrentPage("register")}>Sign up</span>
+          Don't have an account?{' '}
+          <span>
+            <NavLink
+              to={`/register`}
+              onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}
+              style={{
+                color: isHovered ? 'darkblue' : 'blue',
+                cursor: 'pointer',
+                textDecoration: isHovered ? 'underline' : 'none',
+                transition: 'color 0.3s ease, text-decoration 0.3s ease'
+              }}
+            >
+              Sign up
+            </NavLink>
+          </span>
         </div>
         <br />
-        <button type="submit" class="save-button" style={{ marginTop: '1rem' }}>Login</button>
+        <button type="submit" className="save-button" style={{ marginTop: '1rem' }}>Login</button>
       </form>
     </div>
   );
 }
+
+                
 
 export default Login;

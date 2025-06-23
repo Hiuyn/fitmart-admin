@@ -37,7 +37,7 @@ const CategoryList = ({ categories, onEdit, onDelete }) => {
     <div className="product-list">
       <table>
         <thead>
-          <tr>
+          <tr className='head'>
             <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
             <th onClick={() => handleSort('title')}>Tên danh mục {getSortIcon('title')}</th>
             <th onClick={() => handleSort('description')}>Mô tả {getSortIcon('description')}</th>

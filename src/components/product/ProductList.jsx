@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const AccountList = ({ accounts, onEdit, onDelete }) => {
+const ProductList = ({ products, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
 
@@ -20,7 +20,7 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
     }
   };
 
-  const sortedAccounts = [...accounts].sort((a, b) => {
+  const sortedProducts = [...products].sort((a, b) => {
     if (sortField === 'price' || sortField === 'stock' || sortField === 'id') {
       return sortDirection === 'asc' 
         ? a[sortField] - b[sortField]
@@ -44,7 +44,7 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
     <div className="product-list">
       <table>
         <thead>
-          <tr className='head-account'>
+          <tr>
             <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
             <th className='image-row'>Hình ảnh</th>
             <th onClick={() => handleSort('name')}>Tên sản phẩm {getSortIcon('name')}</th>
@@ -55,41 +55,35 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {sortedAccounts.length > 0 ? (
-            sortedAccounts.map(account => (
-              <tr key={account.id}>
-                <td>{account.id}</td>
+          {sortedProducts.length > 0 ? (
+            sortedProducts.map(product => (
+              <tr key={product.id}>
+                <td>{product.id}</td>
                 <td>
-                  {account.avatar ? (
-                    <img 
-                      src={account.avatar} 
-                      alt={account.name} 
-                      className="account-avatar"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.parentNode.innerHTML = '<div class="avatar-placeholder"><i class="fas fa-question"></i></div>';
-                      }}
-                    />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      <i className="fas fa-question"></i>
-                    </div>
-                  )}
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="product-thumbnail"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/512x512/plain/object_cube.png';
+                    }}
+                  />
                 </td>
-                <td>{account.name}</td>
-                <td>{account.email}</td>
-                <td className='role'>
-                  {account.role}
+                <td>
+                  <div className='product'>
+                    {product.name}
+                  </div>
                 </td>
-                <td className='status'>
-                  {account.status}
-                </td>
+                <td>{product.category}</td>
+                <td>{formatPrice(product.price)}</td>
+                <td>{product.stock}</td>
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(account)}>
+                    <button className="edit-button" onClick={() => onEdit(product)}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(account)}>
+                    <button className="delete-button" onClick={() => onDelete(product)}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>
@@ -98,7 +92,7 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="7" className="no-data">Không có người dùng nào</td>
+              <td colSpan="7" className="no-data">Không có sản phẩm nào</td>
             </tr>
           )}
         </tbody>
@@ -107,4 +101,4 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
   );
 };
 
-export default AccountList; 
+export default ProductList; 

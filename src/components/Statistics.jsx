@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
+
+
 
 const Statistics = () => {
   // Dữ liệu mẫu cho biểu đồ doanh thu
@@ -47,6 +49,28 @@ const Statistics = () => {
     { id: 3, title: 'Tổng đơn hàng', value: '843', icon: 'fa-shopping-cart', color: 'orange' },
     { id: 4, title: 'Khách hàng mới', value: '38', icon: 'fa-users', color: 'purple' },
   ];
+
+
+
+  useEffect(() => {
+    // Make API call on component mount (when route is clicked)
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://catfact.ninja/fact'); // Example API
+        if (!response.ok) throw new Error('Network response was not ok');
+        const result = await response.json();
+
+        console.log(result)
+        
+      } catch (error) {
+
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  
 
   return (
     <div className="statistics">

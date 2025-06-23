@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
 
-const AccountList = ({ accounts, onEdit, onDelete }) => {
+const UserList = ({ users, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND' 
-    }).format(price);
-  };
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -20,8 +13,8 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
     }
   };
 
-  const sortedAccounts = [...accounts].sort((a, b) => {
-    if (sortField === 'price' || sortField === 'stock' || sortField === 'id') {
+  const sortedUsers = [...users].sort((a, b) => {
+    if (sortField === 'id') {
       return sortDirection === 'asc' 
         ? a[sortField] - b[sortField]
         : b[sortField] - a[sortField];
@@ -41,30 +34,30 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
   };
 
   return (
-    <div className="product-list">
+    <div className="user-list">
       <table>
         <thead>
-          <tr className='head-account'>
+          <tr>
             <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
-            <th className='image-row'>Hình ảnh</th>
-            <th onClick={() => handleSort('name')}>Tên sản phẩm {getSortIcon('name')}</th>
-            <th onClick={() => handleSort('category')}>Danh mục {getSortIcon('category')}</th>
-            <th onClick={() => handleSort('price')}>Giá {getSortIcon('price')}</th>
-            <th onClick={() => handleSort('stock')}>Tồn kho {getSortIcon('stock')}</th>
+            <th className='user-icon-row'>Ảnh đại diện</th>
+            <th onClick={() => handleSort('name')}>Họ tên {getSortIcon('name')}</th>
+            <th onClick={() => handleSort('email')}>Email {getSortIcon('email')}</th>
+            <th className='role-row' onClick={() => handleSort('role')}>Vai trò {getSortIcon('role')}</th>
+            {/* <th className='status-row' onClick={() => handleSort('status')}>Trạng thái {getSortIcon('status')}</th> */}
             <th className='action-row'>Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          {sortedAccounts.length > 0 ? (
-            sortedAccounts.map(account => (
-              <tr key={account.id}>
-                <td>{account.id}</td>
+          {sortedUsers.length > 0 ? (
+            sortedUsers.map(user => (
+              <tr key={user.id}>
+                <td>{user.id}</td>
                 <td>
-                  {account.avatar ? (
+                  {user.avatar ? (
                     <img 
-                      src={account.avatar} 
-                      alt={account.name} 
-                      className="account-avatar"
+                      src={user.avatar} 
+                      alt={user.name} 
+                      className="user-avatar"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.parentNode.innerHTML = '<div class="avatar-placeholder"><i class="fas fa-question"></i></div>';
@@ -76,20 +69,28 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
                     </div>
                   )}
                 </td>
-                <td>{account.name}</td>
-                <td>{account.email}</td>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
                 <td className='role'>
-                  {account.role}
+                  <div>
+                    <span className={`role-badge ${user.role.toLowerCase()}`}>
+                      {user.role}
+                    </span> 
+                  </div>
                 </td>
-                <td className='status'>
-                  {account.status}
-                </td>
+                {/* <td className='status'>
+                  <div>
+                    <span className={`status-badge ${user.status.toLowerCase()}`}>
+                      {user.status}
+                    </span>
+                  </div>
+                </td> */}
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(account)}>
+                    <button className="edit-button" onClick={() => onEdit(user)}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(account)}>
+                    <button className="delete-button" onClick={() => onDelete(user)}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>
@@ -107,4 +108,4 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
   );
 };
 
-export default AccountList; 
+export default UserList; 

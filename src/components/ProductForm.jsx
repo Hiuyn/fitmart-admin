@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Tabs, Select } from 'antd';
-
+import {
+  Button,
+  Tabs, 
+  Select,
+  Form,
+  Input,
+  InputNumber,
+  Mentions,
+  Segmented,
+  Select,
+  TreeSelect,
+} from 'antd';
 
 
 const LuaChonTabContent = ({ tabData, handleChange }) => {
@@ -274,16 +284,191 @@ const ProductForm = ({ product, onSave, onCancel }) => {
     }
   };
 
+  const [form] = Form.useForm();
 
 
   return (
-    <div className="modal-overlay">
-      <div className="product-form-modal" style={{width: '80%'}}>
-        <h2>{product ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h2>
-        <form onSubmit={handleSubmit}>
+    // <div className="modal-overlay">
+    //   <div className="product-form-modal" style={{width: '80%'}}>
+    //     <h2>{product ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h2>
+    //     <form onSubmit={handleSubmit}>
+    //       <Form
+    //         form={form}
+    //         variant={variant || 'filled'}
+    //         style={{ maxWidth: 600 }}
+    //         initialValues={{ variant: 'filled' }}
+    //       >
+    //       <Tabs defaultActiveKey="1" onChange={(key) => console.log(key)}>
+    //         <TabPane tab="Thông tin sản phẩm" key="1">
+    //           <div className="form-group">
+    //             <label htmlFor="name">Tên sản phẩm:</label>
+    //             <input
+    //               type="text"
+    //               id="name"
+    //               name="name"
+    //               value={formData.name}
+    //               onChange={handleChange}
+    //               className={errors.name ? 'error' : ''}
+    //             />
+    //             {errors.name && <div className="error-message">{errors.name}</div>}
+    //           </div>
+              
+    //           <div className="form-group">
+    //             <label htmlFor="name">Slug:</label>
+    //             <input
+    //               type="text"
+    //               id="slug"
+    //               name="slug"
+    //               value={formData.slug}
+    //               onChange={handleChange}
+    //               className={errors.slug ? 'error' : ''}
+    //             />
+    //             {errors.slug && <div className="error-message">{errors.slug}</div>}
+    //           </div>
+
+    //           <div className="form-group">
+    //             <label htmlFor="description">Mô tả sản phẩm:</label>
+    //             <textarea
+    //               id="description"
+    //               name="description"
+    //               value={formData.description}
+    //               onChange={handleChange}
+    //               rows="4"
+    //               className={errors.description ? 'error' : ''}
+    //             ></textarea>
+    //             {errors.description && <div className="error-message">{errors.description}</div>}
+    //           </div>
+              
+    //           <div className="form-group">
+    //             <label>Hình ảnh sản phẩm:</label>
+    //             <input
+    //               type="file"
+    //               accept="image/*"
+    //               ref={fileInputRef}
+    //               style={{ display: 'none' }}
+    //               onChange={handleImageChange}
+    //             />
+    //             <div className="file-upload-container">
+    //               <button 
+    //                 type="button" 
+    //                 className="file-upload-button"
+    //                 onClick={triggerFileInput}
+    //               >
+    //                 <i className="fas fa-upload"></i> Chọn ảnh từ máy tính
+    //               </button>
+    //               <span className="file-name">
+    //                 {imagePreview ? 'Đã chọn ảnh' : 'Chưa chọn ảnh nào'}
+    //               </span>
+    //             </div>
+
+    //             {imagePreview && (
+    //               <div className="image-preview">
+    //                 <img 
+    //                   src={imagePreview} 
+    //                   alt="Xem trước"
+    //                   onError={(e) => {
+    //                     e.target.onerror = null;
+    //                     e.target.parentNode.innerHTML = '<div class="image-placeholder"><i class="fas fa-image"></i></div>';
+    //                   }}
+    //                 />
+    //               </div>
+    //             )}
+    //           </div>
+
+    //           <div className="form-actions">
+    //             <button type="button" className="cancel-button" onClick={onCancel}>
+    //               Hủy
+    //             </button>
+    //             <button type="submit" className="save-button">
+    //               Tiếp theo
+    //             </button>
+    //           </div>
+    //         </TabPane>
+            
+    //         <TabPane tab="Lựa chọn" key="2">
+    //           <div style={{ marginBottom: 16 }}>
+    //             <Button onClick={add}>ADD</Button>
+    //           </div>
+    //           <Tabs
+    //             type="editable-card"
+    //             hideAdd
+    //             onChange={onChange}
+    //             defaultActiveKey="1"
+    //             onEdit={onEdit}
+    //           >
+    //             {choiceList.map((info, x) => {
+    //               return (
+    //                 <TabPane tab={info.tab} key={info.key}>
+    //                   <LuaChonTabContent tabData={info} handleChange={handleOptionChange}></LuaChonTabContent>
+    //                 </TabPane> 
+    //               );
+    //             })}
+    //           </Tabs>
+    //           <div className="form-actions">
+    //             <button type="button" className="cancel-button" onClick={onCancel}>
+    //               Hủy
+    //             </button>
+    //             <button type="submit" className="save-button">
+    //               Tiếp theo
+    //             </button>
+    //           </div>
+    //         </TabPane>
+    //          header |  title | sku | barcode | weight | height | width | length |inventory_quantity |options |prices|
+    //         body  | input  title | input sku | input barcode | input weight | input height | input width | input length | input inventory_quantity | show options | input prices|
+            
+    //         <TabPane tab="Variant" key="3">
+    //           <table border="1">
+    //             <thead>
+    //               <tr>
+    //                 <th>Title</th>
+    //                 <th>SKU</th>
+    //                 <th>Barcode</th>
+    //                 <th>Weight</th>
+    //                 <th>Height</th>
+    //                 <th>Wwidth</th>
+    //                 <th>Length</th>
+    //                 <th>Inventory quantity</th>
+    //                 <th>Options</th>
+    //               </tr>
+    //             </thead>
+    //             <tbody>
+    //               <tr>
+    //                 <td><input type="text" name="title" /></td>
+    //                 <td><input type="text" name="sku" /></td>
+    //                 <td><input type="text" name="barcode" /></td>
+    //                 <td><input type="number" step="any" name="weight" /></td>
+    //                 <td><input type="number" step="any" name="height" /></td>
+    //                 <td><input type="number" step="any" name="width" /></td>
+    //                 <td><input type="number" step="any" name="length" /></td>
+    //                 <td><input type="number" name="inventory_quantity" /></td>
+    //                 <td><button type="button">Show Options</button></td>
+    //               </tr>
+    //             </tbody>
+    //           </table>
+              
+    //         <div className="form-actions">
+    //             <button type="button" className="cancel-button" onClick={onCancel}>
+    //               Hủy
+    //             </button>
+    //             <button type="submit" className="save-button">
+    //               {product ? 'Cập nhật' : 'Thêm mới'}
+    //             </button>
+    //           </div>
+    //         </TabPane>
+    //       </Tabs>
+    //       </Form>
+    //     </form>
+        
+    //   </div>
+    // </div>
+
+     <Form
+            form={form}
+            layout="vertical"
+          >
           <Tabs defaultActiveKey="1" onChange={(key) => console.log(key)}>
             <TabPane tab="Thông tin sản phẩm" key="1">
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label htmlFor="name">Tên sản phẩm:</label>
                 <input
                   type="text"
@@ -294,9 +479,20 @@ const ProductForm = ({ product, onSave, onCancel }) => {
                   className={errors.name ? 'error' : ''}
                 />
                 {errors.name && <div className="error-message">{errors.name}</div>}
-              </div>
+              </div> */}
+              <Form.Item name="title" label="Tên sản phẩm" rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+
+              <Form.Item name="slug" label="Slug" rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+
+              <Form.Item name="description" label="Mô tả sản phẩm">
+                <Input.TextArea />
+              </Form.Item>
               
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label htmlFor="name">Slug:</label>
                 <input
                   type="text"
@@ -365,7 +561,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
                 <button type="submit" className="save-button">
                   Tiếp theo
                 </button>
-              </div>
+              </div> */}
             </TabPane>
             
             <TabPane tab="Lựa chọn" key="2">
@@ -439,10 +635,7 @@ const ProductForm = ({ product, onSave, onCancel }) => {
               </div>
             </TabPane>
           </Tabs>
-        </form>
-        
-      </div>
-    </div>
+          </Form>
   );
 };
 

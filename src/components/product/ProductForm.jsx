@@ -281,25 +281,38 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
   };
 
   const [form] = Form.useForm();
+  const [options, setOptions] = useState([])
+  const [image, setImage] = useState(null);
 
-  // useEffect(() => {
-  //   getAllProductCategory()
-  //     .then(response => {
-  //       if (response.code === 200) {
-  //         console.log('Product categories fetched successfully:', response.data);
-  //       }
-  //     })
-  // }, []);
+  useEffect(() => {
+    getAllProductCategory()
+      .then(response => {
+        if (response.code === 200) {
+          let data = response.data.data;
+          const categories = data.map(category => {
+            return {
+              value: category.uuid,
+              label: category.title
+            };
+          })
+          setOptions(categories);
+          console.log('Product categories fetched successfully:', response.data);
+        }
+      }).catch(error => {
+        setOptions([]);
+      });
+  }, []);
 
-  const options = [
-    { value: 'jack', label: 'Jack' },
-    { value: 'lucy', label: 'Lucy' },
-    { value: 'Yiminghe', label: 'yiminghe' },
-    { value: 'disabled', label: 'Disabled', disabled: true },
-  ]
+  // const options = [
+  //   { value: 'jack', label: 'Jack' },
+  //   { value: 'lucy', label: 'Lucy' },
+  //   { value: 'Yiminghe', label: 'yiminghe' },
+  //   { value: 'disabled', label: 'Disabled', disabled: true },
+  // ]
 
-  const onFinish = (values) => {
-    console.log(values);
+  const onFinish = () => {
+    // console.log(values);
+    console.log('Form submitted:', form.getFieldsValue());
   };
   
   const [activeTab, setActiveTab] = useState("1");
@@ -492,9 +505,23 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={isModalOpen}
         onOk={() => {
-          form.validateFields().then(onFinish)
+          console.log('Modal OK clicked');
+          form.validateFields().then(onFinish).catch((error) => {
+            console.error('Validation failed:', error);
+          });
         }}
-        onCancel={onCancel}
+        onCancel={() => {
+          form.resetFields()
+          setActiveTab("1")
+          onCancel();
+        }}
+        footer={(_, { OkBtn, CancelBtn }) => (
+          <>
+            <CancelBtn />
+            {activeTab !== "3" ? <Button type="primary" onClick={nextTab}>Tiếp theo</Button> :
+            <OkBtn />}
+          </>
+        )}
       >
         <Form
           form={form}
@@ -521,25 +548,24 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
 
               <Form.Item label="Danh mục sản phẩm" name="category_id">
                 <Select
-                  defaultValue="lucy"
                   options={options}
                 />
               </Form.Item>
 
               <Form.Item name="thumbnail" label="Hình ảnh sản phẩm">
-                <UploadImage onUploadSuccess={(url) => {
-                  console.log('Image uploaded:', url);
+                <UploadImage setImage={(url) => {
+                  setImage(url)
                 }} />
               </Form.Item>
 
-              <div className="form-actions">
+              {/* <div className="form-actions">
                 <Button type="button" onClick={onCancel}>
                   Hủy
                 </Button>
                 <Button type="button" onClick={nextTab}>
                   Tiếp theo
                 </Button>
-              </div>
+              </div> */}
               {/* <div className="form-group">
                 <label htmlFor="name">Slug:</label>
                 <input
@@ -632,14 +658,14 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
                   );
                 })}
               </Tabs>
-              <div className="form-actions">
+              {/* <div className="form-actions">
                 <Button type="button" onClick={onCancel}>
                   Hủy
                 </Button>
                 <Button type="button" onClick={nextTab}>
                   Tiếp theo
                 </Button>
-              </div>
+              </div> */}
             </TabPane>
              header |  title | sku | barcode | weight | height | width | length |inventory_quantity |options |prices|
             body  | input  title | input sku | input barcode | input weight | input height | input width | input length | input inventory_quantity | show options | input prices|
@@ -674,14 +700,14 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
                 </tbody>
               </table>
               
-            <div className="form-actions">
+            {/* <div className="form-actions">
                 <button type="button" className="cancel-button" onClick={onCancel}>
                   Hủy
                 </button>
                 <button type="submit" className="save-button">
                   {product ? 'Cập nhật' : 'Thêm mới'}
                 </button>
-              </div>
+              </div> */}
             </TabPane>
           </Tabs>
         </Form>

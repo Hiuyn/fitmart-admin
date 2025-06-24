@@ -10,7 +10,7 @@ const getBase64 = file =>
     reader.onerror = error => reject(error);
   });
 
-const UploadImage = ({onUploadSuccess}) => {
+const UploadImage = ({setImage}) => {
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState();
 
@@ -24,7 +24,6 @@ const UploadImage = ({onUploadSuccess}) => {
       getBase64(info.file.originFileObj, url => {
         setLoading(false);
         setImageUrl(url);
-        onUploadSuccess(url); 
       });
     }
   };
@@ -49,8 +48,9 @@ const UploadImage = ({onUploadSuccess}) => {
         file: file,
       },
     ]
-    console.log('fileListCustom: ', fileListCustom);
     setImageUrl(fileListCustom)
+    setImage(fileListCustom[0].name); 
+
     return false;
   };
 

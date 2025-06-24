@@ -129,13 +129,12 @@ const Product = () => {
         onDelete={handleDelete} 
       />
 
-      {isFormOpen && (
-        <ProductForm 
-          product={editing} 
-          onSave={handleSave} 
-          onCancel={() => setIsFormOpen(false)} 
-        />
-      )}
+      <ProductForm 
+        product={editing}
+        isModalOpen={isFormOpen}
+        onSave={handleSave}
+        onCancel={() => setIsFormOpen(false)} 
+      />
 
       {isDeleteOpen && (
         <DeleteConfirmation 

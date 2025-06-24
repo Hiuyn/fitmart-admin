@@ -1,26 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import { Flex, message, Upload } from 'antd';
-const getBase64 = (img, callback) => {
-  const reader = new FileReader();
-  reader.addEventListener('load', () => callback(reader.result));
-  reader.readAsDataURL(img);
-};
-const beforeUpload = file => {
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-  if (!isJpgOrPng) {
-    message.error('You can only upload JPG/PNG file!');
-  }
-  const isLt2M = file.size / 1024 / 1024 < 2;
-  if (!isLt2M) {
-    message.error('Image must smaller than 2MB!');
-  }
-  return isJpgOrPng && isLt2M;
-};
+
+const getBase64 = file =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+
 const UploadImage = ({onUploadSuccess}) => {
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState();
-  const handleChange = info => {
+
+  const handlePreview = info => {
     if (info.file.status === 'uploading') {
       setLoading(true);
       return;
@@ -34,20 +28,48 @@ const UploadImage = ({onUploadSuccess}) => {
       });
     }
   };
+  
+  const beforeUpload = async file => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      message.error('You can only upload JPG/PNG file!');
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('Image must smaller than 2MB!');
+    }
+    // console.log(isJpgOrPng, isLt2M, file);
+
+    const fileListCustom = [
+      {
+        uid: file.uid,
+        name: file.name,
+        status: 'done',
+        url: await getBase64(file),
+        file: file,
+      },
+    ]
+    console.log('fileListCustom: ', fileListCustom);
+    setImageUrl(fileListCustom)
+    return false;
+  };
+
   const uploadButton = (
     <button style={{ border: 0, background: 'none' }} type="button">
-      {loading ? <LoadingOutlined /> : <PlusOutlined />}
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
+    {loading ? <LoadingOutlined /> : <PlusOutlined />}
+    <div style={{ marginTop: 8 }}>Upload</div>
+  </button>
   );
   return (
     <Upload
-        listType="picture-card"
-        showUploadList={false}
-        // beforeUpload={beforeUpload}
-        // onChange={handleChange}
+      action=""
+      listType="picture-card"
+      showUploadList={false}
+      accept=".jpg, .jpeg, .png, .jfif"
+      beforeUpload={beforeUpload}
+      onPreview={handlePreview}
     >
-    {imageUrl ? <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
+    {imageUrl ? <img src={imageUrl[0]?.url} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
     </Upload>
   );
 };

@@ -5,7 +5,8 @@ import {
   Select,
   Form,
   Input,
-  Switch
+  Switch,
+  Modal
 } from 'antd';
 import UploadImage from '../common/UploadImage';
 import { getAllProductCategory } from '../../api/product-categories';
@@ -57,7 +58,7 @@ const { TabPane } = Tabs;
 //   };
 // });
 
-const ProductForm = ({ product, onSave, onCancel }) => {
+const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
   const fileInputRef = useRef(null);
   
   const [choiceList , setChoiceList] = useState([
@@ -279,16 +280,45 @@ const ProductForm = ({ product, onSave, onCancel }) => {
     }
   };
 
-const [form] = Form.useForm();
+  const [form] = Form.useForm();
 
-useEffect(() => {
-  getAllProductCategory()
-    .then(response => {
-      if (response.code === 200) {
-        console.log('Product categories fetched successfully:', response.data);
+  // useEffect(() => {
+  //   getAllProductCategory()
+  //     .then(response => {
+  //       if (response.code === 200) {
+  //         console.log('Product categories fetched successfully:', response.data);
+  //       }
+  //     })
+  // }, []);
+
+  const options = [
+    { value: 'jack', label: 'Jack' },
+    { value: 'lucy', label: 'Lucy' },
+    { value: 'Yiminghe', label: 'yiminghe' },
+    { value: 'disabled', label: 'Disabled', disabled: true },
+  ]
+
+  const onFinish = (values) => {
+    console.log(values);
+  };
+  
+  const [activeTab, setActiveTab] = useState("1");
+  const nextTab = async () => {
+    try {
+      if (activeTab === "1") {
+        await form.validateFields(["title", "slug"]);
       }
-    })
-}, []);
+      if (activeTab === "2") {
+        // Nếu tab 2 cần validate thêm trường gì thì thêm ở đây
+      }
+
+      if (activeTab === "1") setActiveTab("2");
+      else if (activeTab === "2") setActiveTab("3");
+    } catch (error) {
+      console.log("Lỗi validate:", error);
+    }
+  };
+
 
   return (
     // <div className="modal-overlay">
@@ -457,11 +487,21 @@ useEffect(() => {
         
     //   </div>
     // </div>
-    <Form
-            form={form}
-            layout="vertical"
-          >
-          <Tabs defaultActiveKey="1" onChange={(key) => console.log(key)}>
+      <Modal
+        width={1000}
+        closable={{ 'aria-label': 'Custom Close Button' }}
+        open={isModalOpen}
+        onOk={() => {
+          form.validateFields().then(onFinish)
+        }}
+        onCancel={onCancel}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+        >
+          <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
             <TabPane tab="Thông tin sản phẩm" key="1">
               <Form.Item name="title" label="Tên sản phẩm" rules={[{ required: true }]}>
                 <Input />
@@ -479,11 +519,27 @@ useEffect(() => {
                 <Switch />
               </Form.Item>
 
-              {/* <Form.Item name="thumbnail" label="Hình ảnh sản phẩm">
+              <Form.Item label="Danh mục sản phẩm" name="category_id">
+                <Select
+                  defaultValue="lucy"
+                  options={options}
+                />
+              </Form.Item>
+
+              <Form.Item name="thumbnail" label="Hình ảnh sản phẩm">
                 <UploadImage onUploadSuccess={(url) => {
                   console.log('Image uploaded:', url);
                 }} />
-              </Form.Item> */}
+              </Form.Item>
+
+              <div className="form-actions">
+                <Button type="button" onClick={onCancel}>
+                  Hủy
+                </Button>
+                <Button type="button" onClick={nextTab}>
+                  Tiếp theo
+                </Button>
+              </div>
               {/* <div className="form-group">
                 <label htmlFor="name">Slug:</label>
                 <input
@@ -554,6 +610,7 @@ useEffect(() => {
                   Tiếp theo
                 </button>
               </div> */}
+
             </TabPane>
             
             <TabPane tab="Lựa chọn" key="2">
@@ -576,12 +633,12 @@ useEffect(() => {
                 })}
               </Tabs>
               <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={onCancel}>
+                <Button type="button" onClick={onCancel}>
                   Hủy
-                </button>
-                <button type="submit" className="save-button">
+                </Button>
+                <Button type="button" onClick={nextTab}>
                   Tiếp theo
-                </button>
+                </Button>
               </div>
             </TabPane>
              header |  title | sku | barcode | weight | height | width | length |inventory_quantity |options |prices|
@@ -627,7 +684,8 @@ useEffect(() => {
               </div>
             </TabPane>
           </Tabs>
-          </Form>
+        </Form>
+      </Modal>
   );
 };
 

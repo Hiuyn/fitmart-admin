@@ -49,7 +49,7 @@ const UploadImage = ({setImage}) => {
       },
     ]
     setImageUrl(fileListCustom)
-    setImage(fileListCustom[0].name); 
+    setImage(fileListCustom); 
 
     return false;
   };

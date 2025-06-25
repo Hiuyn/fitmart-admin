@@ -6,42 +6,70 @@ import {
   Form,
   Input,
   Switch,
-  Modal
+  Modal,
+  Space,
+  Table,
+  Tag,
+  InputNumber
 } from 'antd';
 import UploadImage from '../common/UploadImage';
 import { getAllProductCategory } from '../../api/product-categories';
+import {
+  PlusOutlined
+} from '@ant-design/icons';
 
-const LuaChonTabContent = ({ tabData, handleChange }) => {
-  const [title, setTitle] = useState(tabData.title)
-  const [values, setValues] = useState(tabData.values)
+const LuaChonTabContent = ({ fieldName }) => {
+  // const [title, setTitle] = useState(tabData.title)
+  // const [values, setValues] = useState(tabData.values)
   // const handleChange = (event) => {
   //   const value = event.target.value;
   //   setTitle(value); 
   // }
-const options = [];
-
   return (
-    <div>
-      <div className="form-group">
-        <label>Title:</label>
-        <input
-          type="text"
-          name="title"
-          id={tabData.key}
-          value={title}
-          onChange={handleChange}
-        />
-      </div>
-      <div className="form-group">
-        <label>Values:</label>
+    <Space direction="vertical" style={{ width: '100%' }}>
+      <Form.Item
+        name={[fieldName, 'title']}
+        label="Title"
+        rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
+      >
+        <Input placeholder="Nhập tiêu đề" />
+      </Form.Item>
+
+      <Form.Item
+        name={[fieldName, 'values']}
+        label="Values"
+        rules={[{ required: true, message: 'Vui lòng nhập ít nhất 1 giá trị' }]}
+      >
         <Select
           mode="tags"
           style={{ width: '100%' }}
           tokenSeparators={[',']}
-          options={options}
+          placeholder="Nhập các giá trị, cách nhau bởi dấu phẩy"
         />
-      </div>
-    </div>
+      </Form.Item>
+    </Space>
+    // <div>
+    //   <div className="form-group">
+        
+    //     <label>Title:</label>
+    //     <input
+    //       type="text"
+    //       name="title"
+    //       id={tabData.key}
+    //       value={title}
+    //       onChange={handleChange}
+    //     />
+    //   </div>
+    //   <div className="form-group">
+    //     <label>Values:</label>
+    //     <Select
+    //       mode="tags"
+    //       style={{ width: '100%' }}
+    //       tokenSeparators={[',']}
+    //       options={options}
+    //     />
+    //   </div>
+    // </div>
   );
 };
 
@@ -210,7 +238,7 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
 
 
 
-  const [activeKey, setActiveKey] = useState(choiceList[0].key);
+  const [activeKey, setActiveKey] = useState("");
   const onChange = newActiveKey => {
     setActiveKey(newActiveKey);
   };
@@ -272,7 +300,7 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
     setActiveKey(newActiveKey);
   };
   const onEdit = (targetKey, action) => {
-    console.log(action);
+    console.log(action, targetKey);
     if (action === 'add') {
       add();
     } else {
@@ -316,22 +344,155 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
   };
   
   const [activeTab, setActiveTab] = useState("1");
-  const nextTab = async () => {
+  const [maxTab, setMaxTab] = useState("1");
+const [variantTable, setVariantTable] = useState([]);
+
+  const changeTab = async (targetKey) => {
+    const current = parseInt(activeTab, 10);
+    const target = parseInt(targetKey, 10);
+
     try {
-      if (activeTab === "1") {
-        await form.validateFields(["title", "slug"]);
-      }
-      if (activeTab === "2") {
-        // Nếu tab 2 cần validate thêm trường gì thì thêm ở đây
+      // Chỉ validate khi muốn tiến tới tab cao hơn chưa từng vào
+      console.log(target, maxTab, targetKey, activeTab)
+      if (target > current) {
+        if (activeTab === "1") {
+          await form.validateFields(["title", "slug"]);
+        }
+        if (activeTab === "2") {
+          const fields = form.getFieldValue("options") || [];
+          const validateNames = fields.map((_, index) => [ "options", index, "title" ]);
+          validateNames.push(...fields.map((_, index) => [ "options", index, "values" ]));
+
+          await form.validateFields(validateNames);
+        }
+
+        if (targetKey === "3") {
+          const formValues = form.getFieldsValue();
+          const options = formValues.options || [];
+          const productTitle = formValues.title || "";
+
+          const combinations = generateCombinations(options);
+
+          const variants = combinations.map((combo, idx) => {
+            const sku = [productTitle, ...combo].join("-").toUpperCase();
+            return {
+              key: idx,
+              title: productTitle,
+              sku,
+              price: null,
+              quantity: null,
+              combination: combo,
+            };
+          });
+
+          setVariantTable(variants);
+          form.setFieldsValue({ variants });
+        }
       }
 
-      if (activeTab === "1") setActiveTab("2");
-      else if (activeTab === "2") setActiveTab("3");
+      setActiveTab(targetKey);
+      if (target > parseInt(maxTab, 10)) setMaxTab(target);
+
     } catch (error) {
       console.log("Lỗi validate:", error);
     }
   };
 
+  const generateCombinations = (options) => {
+    if (!options || options.length === 0) return [[]];
+
+    const [first, ...rest] = options;
+    const restComb = generateCombinations(rest);
+
+    return first.values.length
+      ? first.values.flatMap(value =>
+          restComb.map(comb => [value, ...comb])
+        )
+      : restComb;
+  };
+
+  useEffect(() => {
+    form.setFieldsValue({
+      options: [{ title: '', values: [] }]
+    });
+    setTimeout(() => {
+      setActiveKey("0"); // fields.length là index của item mới
+    }, 0)
+  }, []);
+
+  const [variantData, setVariantData] = useState([]);
+
+  const columns = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    render: text => <a>{text}</a>,
+  },
+  {
+    title: 'Age',
+    dataIndex: 'age',
+    key: 'age',
+  },
+  {
+    title: 'Address',
+    dataIndex: 'address',
+    key: 'address',
+  },
+  {
+    title: 'Tags',
+    key: 'tags',
+    dataIndex: 'tags',
+    render: (_, { tags }) => (
+      <>
+        {tags.map(tag => {
+          let color = tag.length > 5 ? 'geekblue' : 'green';
+          if (tag === 'loser') {
+            color = 'volcano';
+          }
+          return (
+            <Tag color={color} key={tag}>
+              {tag.toUpperCase()}
+            </Tag>
+          );
+        })}
+      </>
+    ),
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    render: (_, record) => (
+      <Space size="middle">
+        <a>Invite {record.name}</a>
+        <a>Delete</a>
+      </Space>
+    ),
+  },
+];
+const data = [
+  {
+    key: '1',
+    name: 'John Brown',
+    age: 32,
+    address: 'New York No. 1 Lake Park',
+    tags: ['nice', 'developer'],
+  },
+  {
+    key: '2',
+    name: 'Jim Green',
+    age: 42,
+    address: 'London No. 1 Lake Park',
+    tags: ['loser'],
+  },
+  {
+    key: '3',
+    name: 'Joe Black',
+    age: 32,
+    address: 'Sydney No. 1 Lake Park',
+    tags: ['cool', 'teacher'],
+  },
+];
 
   return (
     // <div className="modal-overlay">
@@ -513,12 +674,13 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
         onCancel={() => {
           form.resetFields()
           setActiveTab("1")
+          setMaxTab("1")
           onCancel();
         }}
         footer={(_, { OkBtn, CancelBtn }) => (
           <>
             <CancelBtn />
-            {activeTab !== "3" ? <Button type="primary" onClick={nextTab}>Tiếp theo</Button> :
+            {activeTab !== "3" ? <Button type="primary" onClick={() => changeTab((parseInt(activeTab) + 1).toString())}>Tiếp theo</Button> :
             <OkBtn />}
           </>
         )}
@@ -528,7 +690,7 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
           layout="vertical"
           onFinish={onFinish}
         >
-          <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
+          <Tabs activeKey={activeTab} onChange={changeTab}>
             <TabPane tab="Thông tin sản phẩm" key="1">
               <Form.Item name="title" label="Tên sản phẩm" rules={[{ required: true }]}>
                 <Input />
@@ -553,111 +715,79 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
               </Form.Item>
 
               <Form.Item name="thumbnail" label="Hình ảnh sản phẩm">
-                <UploadImage setImage={(url) => {
-                  setImage(url)
+                <UploadImage setImage={(file) => {
+                  setImage(file)
                 }} />
               </Form.Item>
-
-              {/* <div className="form-actions">
-                <Button type="button" onClick={onCancel}>
-                  Hủy
-                </Button>
-                <Button type="button" onClick={nextTab}>
-                  Tiếp theo
-                </Button>
-              </div> */}
-              {/* <div className="form-group">
-                <label htmlFor="name">Slug:</label>
-                <input
-                  type="text"
-                  id="slug"
-                  name="slug"
-                  value={formData.slug}
-                  onChange={handleChange}
-                  className={errors.slug ? 'error' : ''}
-                />
-                {errors.slug && <div className="error-message">{errors.slug}</div>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="description">Mô tả sản phẩm:</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows="4"
-                  className={errors.description ? 'error' : ''}
-                ></textarea>
-                {errors.description && <div className="error-message">{errors.description}</div>}
-              </div>
-              
-              <div className="form-group">
-                <label>Hình ảnh sản phẩm:</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  onChange={handleImageChange}
-                />
-                <div className="file-upload-container">
-                  <button 
-                    type="button" 
-                    className="file-upload-button"
-                    onClick={triggerFileInput}
-                  >
-                    <i className="fas fa-upload"></i> Chọn ảnh từ máy tính
-                  </button>
-                  <span className="file-name">
-                    {imagePreview ? 'Đã chọn ảnh' : 'Chưa chọn ảnh nào'}
-                  </span>
-                </div>
-
-                {imagePreview && (
-                  <div className="image-preview">
-                    <img 
-                      src={imagePreview} 
-                      alt="Xem trước"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.parentNode.innerHTML = '<div class="image-placeholder"><i class="fas fa-image"></i></div>';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={onCancel}>
-                  Hủy
-                </button>
-                <button type="submit" className="save-button">
-                  Tiếp theo
-                </button>
-              </div> */}
-
             </TabPane>
             
             <TabPane tab="Lựa chọn" key="2">
-              <div style={{ marginBottom: 16 }}>
-                <Button onClick={add}>ADD</Button>
-              </div>
-              <Tabs
-                type="editable-card"
-                hideAdd
-                onChange={onChange}
-                defaultActiveKey="1"
-                onEdit={onEdit}
-              >
-                {choiceList.map((info, x) => {
-                  return (
-                    <TabPane tab={info.tab} key={info.key}>
-                      <LuaChonTabContent tabData={info} handleChange={handleOptionChange}></LuaChonTabContent>
-                    </TabPane> 
-                  );
-                })}
-              </Tabs>
+              <Form.List name="options">
+                {(fields, { add, remove }) => {
+                  const handleAdd = () => {
+                    add({ title: '', values: [] });
+                    setTimeout(() => {
+                      setActiveKey(fields.length.toString()); // fields.length là index của item mới
+                    }, 0);
+                  };
+
+                  const handleRemove = (targetKey) => {
+                    if (fields.length !== 1) {
+                      const fieldIndex = fields.findIndex(f => f.name.toString() === targetKey);
+                      if (fieldIndex > -1) {
+                        remove(fieldIndex);
+                        if (fields.length) {
+                          const nextTab = fieldIndex > 0
+                            ? fields[fieldIndex - 1].name.toString()
+                            : fields[0].name.toString();
+  
+                          setActiveKey(nextTab);
+                        }
+                      }
+                    }
+                  };
+
+                  const handleEdit = (targetKey, action) => {
+                    if (action === 'add') handleAdd();
+                    else if (action === 'remove') handleRemove(targetKey);
+                  };
+
+                  return(<>
+                    <div style={{ marginBottom: 16 }}>
+                      <Button type="dashed" onClick={() => handleEdit(null, 'add')} icon={<PlusOutlined />}>
+                        Thêm lựa chọn
+                      </Button>
+                    </div>
+                    <Tabs type="editable-card" hideAdd defaultActiveKey="1" activeKey={activeKey} onChange={onChange} onEdit={handleEdit}>
+                      {fields.map(({ key, name }) => (
+                        <Tabs.TabPane tab={`Choice ${Number(name) + 1}`} key={name.toString()} closable>
+                          <LuaChonTabContent fieldName={name} />
+                        </Tabs.TabPane>
+                      ))}
+                    </Tabs>
+                  </>)
+                }}
+              </Form.List>
+              {/* <Form.List name="options">
+                <div style={{ marginBottom: 16 }}>
+                  <Button onClick={add}>ADD</Button>
+                </div>
+                <Tabs
+                  type="editable-card"
+                  hideAdd
+                  onChange={onChange}
+                  defaultActiveKey="1"
+                  onEdit={onEdit}
+                >
+                  {choiceList.map((info, index) => {
+                    return (
+                      <TabPane tab={info.tab} key={info.key}>
+                        <LuaChonTabContent fieldName={index}/>
+                      </TabPane> 
+                    );
+                  })}
+                </Tabs>
+              </Form.List> */}
               {/* <div className="form-actions">
                 <Button type="button" onClick={onCancel}>
                   Hủy
@@ -671,7 +801,7 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
             body  | input  title | input sku | input barcode | input weight | input height | input width | input length | input inventory_quantity | show options | input prices|
             
             <TabPane tab="Variant" key="3">
-              <table border="1">
+              {/* <table border="1">
                 <thead>
                   <tr>
                     <th>Title</th>
@@ -679,7 +809,7 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
                     <th>Barcode</th>
                     <th>Weight</th>
                     <th>Height</th>
-                    <th>Wwidth</th>
+                    <th>Width</th>
                     <th>Length</th>
                     <th>Inventory quantity</th>
                     <th>Options</th>
@@ -698,7 +828,250 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
                     <td><button type="button">Show Options</button></td>
                   </tr>
                 </tbody>
-              </table>
+              </table> */}
+              {/* <Form.List name="variants">
+                {(fields) => {
+                  const columns = [
+                    {
+                      title: 'Title',
+                      dataIndex: 'title',
+                      render: (_, record, index) => (
+                        <Form.Item
+                          name={['variants', index, 'title']}
+                          rules={[{ required: true, message: 'Vui lòng nhập Title' }]}
+                        >
+                          <Input />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'SKU',
+                      dataIndex: 'sku',
+                      render: (_, record, index) => (
+                        <Form.Item
+                          name={['variants', index, 'sku']}
+                          rules={[{ required: true, message: 'Vui lòng nhập SKU' }]}
+                        >
+                          <Input />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Barcode',
+                      dataIndex: 'barcode',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "barcode"]} noStyle>
+                          <Input placeholder="Barcode" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Weight',
+                      dataIndex: 'weight',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "weight"]} noStyle>
+                          <Input placeholder="Weight" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Height',
+                      dataIndex: 'height',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "height"]} noStyle>
+                          <Input placeholder="Height" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Width',
+                      dataIndex: 'width',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "width"]} noStyle>
+                          <Input placeholder="Width" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Length',
+                      dataIndex: 'length',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "length"]} noStyle>
+                          <Input placeholder="Length" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Inventory Quantity',
+                      dataIndex: 'inventory_quantity',
+                      render: (_, __, index) => (
+                        <Form.Item
+                          name={['variants', index, 'inventory_quantity']}
+                          rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
+                        >
+                          <InputNumber min={0} style={{ width: '100%' }} />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Price',
+                      dataIndex: 'price',
+                      render: (_, __, index) => (
+                        <Form.Item
+                          name={['variants', index, 'price']}
+                          rules={[{ required: true, message: 'Vui lòng nhập Price' }]}
+                        >
+                          <InputNumber min={0} style={{ width: '100%' }} />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Options',
+                      dataIndex: 'options',
+                      render: (_, __, index) => (
+                        <span>
+                          {variantData[index]?.combination?.map((val, idx) => (
+                            <Tag key={idx} color="blue">{val}</Tag>
+                          ))}
+                        </span>
+                      )
+                    }
+                  ];
+
+                  return (
+                    <Table
+                      pagination={false}
+                      columns={columns}
+                      dataSource={variantTable}
+                      rowKey={(record) => record.key || record.name}
+                    />
+                  );
+                }}
+              </Form.List> */}
+              <Table
+                      pagination={false}
+                      columns={[
+                    {
+                      title: 'Title',
+                      dataIndex: 'title',
+                      render: (_, record, index) => (
+                        <Form.Item
+                          name={['variants', index, 'title']}
+                          rules={[{ required: true, message: 'Vui lòng nhập Title' }]}
+                        >
+                          <Input />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'SKU',
+                      dataIndex: 'sku',
+                      render: (_, record, index) => (
+                        <Form.Item
+                          name={['variants', index, 'sku']}
+                          rules={[{ required: true, message: 'Vui lòng nhập SKU' }]}
+                        >
+                          <Input />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Barcode',
+                      dataIndex: 'barcode',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "barcode"]} noStyle>
+                          <Input placeholder="Barcode" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Weight',
+                      dataIndex: 'weight',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "weight"]} noStyle>
+                          <Input placeholder="Weight" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Height',
+                      dataIndex: 'height',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "height"]} noStyle>
+                          <Input placeholder="Height" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Width',
+                      dataIndex: 'width',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "width"]} noStyle>
+                          <Input placeholder="Width" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Length',
+                      dataIndex: 'length',
+                      render: (_, __, index) => (
+                        <Form.Item name={[index, "length"]} noStyle>
+                          <Input placeholder="Length" />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Inventory Quantity',
+                      dataIndex: 'inventory_quantity',
+                      render: (_, __, index) => (
+                        <Form.Item
+                          name={['variants', index, 'inventory_quantity']}
+                          rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
+                        >
+                          <InputNumber min={0} style={{ width: '100%' }} />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Price',
+                      dataIndex: 'price',
+                      render: (_, __, index) => (
+                        <Form.Item
+                          name={['variants', index, 'price']}
+                          rules={[{ required: true, message: 'Vui lòng nhập Price' }]}
+                        >
+                          <InputNumber min={0} style={{ width: '100%' }} />
+                        </Form.Item>
+                      )
+                    },
+                    {
+                      title: 'Options',
+                      dataIndex: 'options',
+                      render: (_, record, index) => (
+                        <>
+                          {record.combination?.map((item, index) => (
+                            // <pre>{item}</pre>
+                            <Tag color="blue" key={index}>
+                              {item}
+                            </Tag>
+                          ))}
+                        </>
+                        // <span>
+                        //   {record?.combination}
+                        //   {/* {variantTable[index]?.combination?.map((val, idx) => (
+                        //     <>
+                        //     <pre>{val}</pre>
+                        //     <Tag key={idx} color="blue">{val}</Tag>
+                        //     </>
+                        //   ))} */}
+                        // </span>
+                      )
+                    }
+                  ]}
+                      dataSource={variantTable}
+                      rowKey={(record) => record.key || record.name}
+                    />
+
               
             {/* <div className="form-actions">
                 <button type="button" className="cancel-button" onClick={onCancel}>

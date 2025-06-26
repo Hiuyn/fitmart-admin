@@ -17,6 +17,8 @@ import { getAllProductCategory } from '../../api/product-categories';
 import {
   PlusOutlined
 } from '@ant-design/icons';
+import { jsonToFormData } from '../../util/helpers';
+import { createProduct } from '../../api/products';
 
 const LuaChonTabContent = ({ fieldName }) => {
   // const [title, setTitle] = useState(tabData.title)
@@ -340,7 +342,38 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
 
   const onFinish = () => {
     // console.log(values);
-    console.log('Form submitted:', form.getFieldsValue());
+      form.validateFields().then(values => {
+        let temp = {
+          "product": {
+              "title": values.title,
+              "slug": values.slug,
+              "description": values.description,
+              "thumbnail": image?.length > 0 ? `uploads/${image[0].file.name}` : "",
+              "status": values.status ? "acitve" : "inactive",
+              "type": "",
+              "category_id": values.category_id,
+              "collection_id": "",
+              "metadata": {}
+          },
+          "options": {
+            "created": values.options,
+            "updated": [],
+            "deleted": []
+          },
+          "variants": {
+              "created": values.variants,
+              "updated": [],
+              "deleted": []
+          }
+        }
+        console.log(temp)
+        // jsonToFormData(temp, formData)
+        createProduct(temp).then(res => {
+          console.log(res)
+        }).catch(err => {
+          console.log(err)
+        })
+      })
   };
   
   const [activeTab, setActiveTab] = useState("1");
@@ -372,18 +405,26 @@ const [variantTable, setVariantTable] = useState([]);
           const productTitle = formValues.title || "";
 
           const combinations = generateCombinations(options);
+          const formatted = formatCombinations(options, combinations);
 
-          const variants = combinations.map((combo, idx) => {
-            const sku = [productTitle, ...combo].join("-").toUpperCase();
-            return {
-              key: idx,
-              title: productTitle,
-              sku,
-              price: null,
-              quantity: null,
-              combination: combo,
-            };
-          });
+          const variants = formatted.map((comboObj, idx) => {
+          const comboValues = Object.values(comboObj); // ["M", "Black"]
+          const sku = [productTitle, ...comboValues].join("-").toUpperCase();
+
+          return {
+            key: idx,
+            title: productTitle,
+            sku,
+            barcode: "",
+            height: 0,
+            length: 0,
+            weight: 0,
+            width: 0,
+            price: 0,
+            inventory_quantity: 0,
+            options: comboObj, // Giữ object dạng { Size: "M", Color: "Black" }
+          };
+        });
 
           setVariantTable(variants);
           form.setFieldsValue({ variants });
@@ -411,6 +452,16 @@ const [variantTable, setVariantTable] = useState([]);
       : restComb;
   };
 
+  const formatCombinations = (options, combinations) => {
+    return combinations.map(comb => {
+      const obj = {};
+      options.forEach((opt, index) => {
+        obj[opt.title.toLowerCase()] = comb[index];
+      });
+      return obj;
+    });
+  };
+
   useEffect(() => {
     form.setFieldsValue({
       options: [{ title: '', values: [] }]
@@ -421,78 +472,6 @@ const [variantTable, setVariantTable] = useState([]);
   }, []);
 
   const [variantData, setVariantData] = useState([]);
-
-  const columns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    render: text => <a>{text}</a>,
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address',
-  },
-  {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map(tag => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-];
-const data = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer'],
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser'],
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sydney No. 1 Lake Park',
-    tags: ['cool', 'teacher'],
-  },
-];
 
   return (
     // <div className="modal-overlay">
@@ -717,6 +696,7 @@ const data = [
               <Form.Item name="thumbnail" label="Hình ảnh sản phẩm">
                 <UploadImage setImage={(file) => {
                   setImage(file)
+                  // form.setFieldValue('thumbnail', file)
                 }} />
               </Form.Item>
             </TabPane>
@@ -797,9 +777,6 @@ const data = [
                 </Button>
               </div> */}
             </TabPane>
-             header |  title | sku | barcode | weight | height | width | length |inventory_quantity |options |prices|
-            body  | input  title | input sku | input barcode | input weight | input height | input width | input length | input inventory_quantity | show options | input prices|
-            
             <TabPane tab="Variant" key="3">
               {/* <table border="1">
                 <thead>
@@ -979,7 +956,7 @@ const data = [
                       title: 'Barcode',
                       dataIndex: 'barcode',
                       render: (_, __, index) => (
-                        <Form.Item name={[index, "barcode"]} noStyle>
+                        <Form.Item name={['variants', index, "barcode"]} noStyle>
                           <Input placeholder="Barcode" />
                         </Form.Item>
                       )
@@ -988,7 +965,7 @@ const data = [
                       title: 'Weight',
                       dataIndex: 'weight',
                       render: (_, __, index) => (
-                        <Form.Item name={[index, "weight"]} noStyle>
+                        <Form.Item name={['variants', index, "weight"]} noStyle>
                           <Input placeholder="Weight" />
                         </Form.Item>
                       )
@@ -997,7 +974,7 @@ const data = [
                       title: 'Height',
                       dataIndex: 'height',
                       render: (_, __, index) => (
-                        <Form.Item name={[index, "height"]} noStyle>
+                        <Form.Item name={['variants', index, "height"]} noStyle>
                           <Input placeholder="Height" />
                         </Form.Item>
                       )
@@ -1006,7 +983,7 @@ const data = [
                       title: 'Width',
                       dataIndex: 'width',
                       render: (_, __, index) => (
-                        <Form.Item name={[index, "width"]} noStyle>
+                        <Form.Item name={['variants', index, "width"]} noStyle>
                           <Input placeholder="Width" />
                         </Form.Item>
                       )
@@ -1015,7 +992,7 @@ const data = [
                       title: 'Length',
                       dataIndex: 'length',
                       render: (_, __, index) => (
-                        <Form.Item name={[index, "length"]} noStyle>
+                        <Form.Item name={['variants', index, "length"]} noStyle>
                           <Input placeholder="Length" />
                         </Form.Item>
                       )
@@ -1049,12 +1026,21 @@ const data = [
                       dataIndex: 'options',
                       render: (_, record, index) => (
                         <>
-                          {record.combination?.map((item, index) => (
+                        <Form.Item
+                          name={['variants', index, 'options']}
+                        >
+                          {Object.values(record.options).map((item, idx) => (
+                            <Tag color="blue" key={idx}>
+                              {item}
+                            </Tag>
+                          ))}
+                        </Form.Item>
+                          {/* {record.combination?.map((item, index) => (
                             // <pre>{item}</pre>
                             <Tag color="blue" key={index}>
                               {item}
                             </Tag>
-                          ))}
+                          ))} */}
                         </>
                         // <span>
                         //   {record?.combination}

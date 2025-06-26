@@ -6,7 +6,7 @@ axios.defaults.headers.post['Accept'] = 'application/json'
 
 axios.interceptors.request.use(config => {
   const authen = localStorage.getItem('authen', {})
-  const token = authen ? JSON.parse(authen).access_token : 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJpYXQiOjE3NTA2OTM2NzMsImV4cCI6MTc1MDc4MDA3M30.MPftlDvOMZWDTK22fcGtFedu7zKDOlomrSf0cW1iRrE';
+  const token = authen ? JSON.parse(authen).access_token : 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJpYXQiOjE3NTA5NDY2MDMsImV4cCI6MTc1MTAzMzAwM30.SRxh0yz_50-FDvBH4R8aeK5l0CrBi23V-CYy_cUnpkk';
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

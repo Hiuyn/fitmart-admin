@@ -159,11 +159,11 @@ const OrderForm = ({ order, onSave, onCancel }) => {
     const newErrors = {};
     
     if (!formData.name.trim()) {
-      newErrors.name = 'Tên giỏ hàng không được để trống';
+      newErrors.name = 'Tên hàng đặt không được để trống';
     }
 
     if (!formData.slug.trim()) {
-      newErrors.slug = 'Slug giỏ hàng không được để trống';
+      newErrors.slug = 'Slug hàng đặt không được để trống';
     }
     
     if (!formData.category.trim()) {
@@ -279,12 +279,12 @@ const OrderForm = ({ order, onSave, onCancel }) => {
   return (
     <div className="modal-overlay">
       <div className="product-form-modal" style={{width: '80%'}}>
-        <h2>{order ? 'Chỉnh sửa giỏ hàng' : 'Thêm giỏ hàng mới'}</h2>
+        <h2>{order ? 'Chỉnh sửa hàng đặt' : 'Thêm hàng đặt mới'}</h2>
         <form onSubmit={handleSubmit}>
           <Tabs defaultActiveKey="1" onChange={(key) => console.log(key)}>
-            <TabPane tab="Thông tin giỏ hàng" key="1">
+            <TabPane tab="Thông tin hàng đặt" key="1">
               <div className="form-group">
-                <label htmlFor="name">Tên giỏ hàng:</label>
+                <label htmlFor="name">Tên hàng đặt:</label>
                 <input
                   type="text"
                   id="name"
@@ -310,7 +310,7 @@ const OrderForm = ({ order, onSave, onCancel }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="description">Mô tả giỏ hàng:</label>
+                <label htmlFor="description">Mô tả hàng đặt:</label>
                 <textarea
                   id="description"
                   name="description"
@@ -323,7 +323,7 @@ const OrderForm = ({ order, onSave, onCancel }) => {
               </div>
               
               <div className="form-group">
-                <label>Hình ảnh giỏ hàng:</label>
+                <label>Hình ảnh hàng đặt:</label>
                 <input
                   type="file"
                   accept="image/*"

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const AccountList = ({ accounts, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
@@ -40,29 +41,28 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
+  const navigate = useNavigate();
   return (
     <div className="product-list">
       <table>
         <thead>
           <tr className='head-account'>
-            <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
+            <th className='id-row' style={{width: '120px'}} onClick={() => handleSort('uuid')}>ID {getSortIcon('uuid')}</th>
             <th className='image-row'>Hình ảnh</th>
-            <th onClick={() => handleSort('name')}>Tên sản phẩm {getSortIcon('name')}</th>
-            <th onClick={() => handleSort('category')}>Danh mục {getSortIcon('category')}</th>
-            <th onClick={() => handleSort('price')}>Giá {getSortIcon('price')}</th>
-            <th onClick={() => handleSort('stock')}>Tồn kho {getSortIcon('stock')}</th>
+            <th onClick={() => handleSort('user_name')}>Tên tài khoản {getSortIcon('user_name')}</th>
+            <th onClick={() => handleSort('email')}>Email {getSortIcon('email')}</th>
             <th className='action-row'>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {sortedAccounts.length > 0 ? (
             sortedAccounts.map(account => (
-              <tr key={account.id}>
-                <td>{account.id}</td>
+              <tr className='item-row' key={account.id} onClick={() => navigate(`/admin/accounts/${account.uuid}`)}>
+                <td>{account.uuid}</td>
                 <td>
-                  {account.avatar ? (
+                  {account.avatar_url ? (
                     <img 
-                      src={account.avatar} 
+                      src={account.avatar_url} 
                       alt={account.name} 
                       className="account-avatar"
                       onError={(e) => {
@@ -76,20 +76,14 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
                     </div>
                   )}
                 </td>
-                <td>{account.name}</td>
+                <td>{account.user_name}</td>
                 <td>{account.email}</td>
-                <td className='role'>
-                  {account.role}
-                </td>
-                <td className='status'>
-                  {account.status}
-                </td>
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(account)}>
+                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(account)}}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(account)}>
+                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(account)}}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>

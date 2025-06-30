@@ -53,14 +53,13 @@ const Statistics = () => {
 
 
   useEffect(() => {
-    // Make API call on component mount (when route is clicked)
     const fetchData = async () => {
       try {
-        const response = await fetch('https://catfact.ninja/fact'); // Example API
+        const response = await fetch('API_HERE');
         if (!response.ok) throw new Error('Network response was not ok');
         const result = await response.json();
 
-        console.log(result)
+        // result = overviewStats
         
       } catch (error) {
 

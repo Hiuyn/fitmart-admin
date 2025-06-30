@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const ProductList = ({ products, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
@@ -40,12 +41,13 @@ const ProductList = ({ products, onEdit, onDelete }) => {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
+  const navigate = useNavigate();
   return (
     <div className="product-list">
       <table>
         <thead>
           <tr>
-            <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
+            <th className='id-row' style={{width: '120px'}} onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
             <th className='image-row'>Hình ảnh</th>
             <th onClick={() => handleSort('name')}>Tên sản phẩm {getSortIcon('name')}</th>
             <th onClick={() => handleSort('category')}>Danh mục {getSortIcon('category')}</th>
@@ -57,12 +59,12 @@ const ProductList = ({ products, onEdit, onDelete }) => {
         <tbody>
           {sortedProducts.length > 0 ? (
             sortedProducts.map(product => (
-              <tr key={product.id}>
-                <td>{product.id}</td>
+              <tr className='item-row' key={product.id} onClick={() => navigate(`/admin/products/${product.uuid}`)}>
+                <td>{product.uuid}</td>
                 <td>
-                  <img 
-                    src={product.image} 
-                    alt={product.name} 
+                  <img
+                    src={product.thumbnail} 
+                    alt={product.title} 
                     className="product-thumbnail"
                     onError={(e) => {
                       e.target.onerror = null;
@@ -72,7 +74,7 @@ const ProductList = ({ products, onEdit, onDelete }) => {
                 </td>
                 <td>
                   <div className='product'>
-                    {product.name}
+                    {product.title}
                   </div>
                 </td>
                 <td>{product.category}</td>
@@ -80,10 +82,10 @@ const ProductList = ({ products, onEdit, onDelete }) => {
                 <td>{product.stock}</td>
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(product)}>
+                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(product)}}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(product)}>
+                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(product)}}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>

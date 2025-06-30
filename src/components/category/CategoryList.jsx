@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const CategoryList = ({ categories, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
@@ -33,6 +34,7 @@ const CategoryList = ({ categories, onEdit, onDelete }) => {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
+  const navigate = useNavigate();
   return (
     <div className="product-list">
       <table>
@@ -47,8 +49,8 @@ const CategoryList = ({ categories, onEdit, onDelete }) => {
         <tbody>
           {sortedCategories.length > 0 ? (
             sortedCategories.map(category => (
-              <tr key={category.id}>
-                <td>{category.id}</td>
+              <tr className='item-row' key={category.uuid} onClick={() => navigate(`/admin/category/${category.uuid}`)}>
+                <td>{category.uuid}</td>
                 <td>
                   <div className='product'>
                     {category.title}
@@ -57,10 +59,10 @@ const CategoryList = ({ categories, onEdit, onDelete }) => {
                 <td>{category.description}</td>
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(category)}>
+                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(category)}}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(category)}>
+                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(category)}}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>

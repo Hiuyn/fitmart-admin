@@ -1,62 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import UserList from './UserList';
 import UserForm from './UserForm';
 import DeleteConfirmation from '../DeleteConfirmation';
+import {notification} from 'antd'
 
 const Users = () => {
   // Dữ liệu mẫu
-  const sampleUsers = [
-    { 
-      id: 1, 
-      name: 'Nguyễn Văn A', 
-      email: 'nguyenvana@example.com', 
-      role: 'Admin', 
-      status: 'Hoạt động',
-      phone: '0901234567',
-      address: 'Hồ Chí Minh',
-      avatar: ''
-    },
-    { 
-      id: 2, 
-      name: 'Trần Thị B', 
-      email: 'tranthib@example.com', 
-      role: 'Nhân viên', 
-      status: 'Hoạt động',
-      phone: '0901234568',
-      address: 'Hà Nội',
-      avatar: ''
-    },
-    { 
-      id: 3, 
-      name: 'Lê Văn C', 
-      email: 'levanc@example.com', 
-      role: 'Nhân viên', 
-      status: 'Bị khóa',
-      phone: '0901234569',
-      address: 'Đà Nẵng',
-      avatar: ''
-    },
-    { 
-      id: 4, 
-      name: 'Phạm Thị D', 
-      email: 'phamthid@example.com', 
-      role: 'Khách hàng', 
-      status: 'Hoạt động',
-      phone: '0901234570',
-      address: 'Cần Thơ',
-      avatar: ''
-    },
-    { 
-      id: 5, 
-      name: 'Hoàng Văn E', 
-      email: 'hoangvane@example.com', 
-      role: 'Khách hàng', 
-      status: 'Chờ xác nhận',
-      phone: '0901234571',
-      address: 'Huế',
-      avatar: ''
-    },
-  ];
+  const sampleUsers = [];
 
   const [users, setUsers] = useState(sampleUsers);
   const [editing, setEditing] = useState(null);
@@ -65,12 +15,51 @@ const Users = () => {
   const [userToDelete, setUserToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+
+  useEffect(() => {
+    fetchUsers(); // Your API expects 1-based page numbers
+  }, []);
+  const [ready, setReady] = useState(false);
+  const fetchUsers = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`http://localhost:8080/api/v1/users?created_at=-1&limit=25&q=&type=`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      const filteredData = data.data.data.filter(product => product.deleted_at === null)
+      setUsers(filteredData)
+      setReady(true);
+    } catch (error) {
+      console.log('Eror: ', error.message)
+    }
+  };
+
   // Lọc người dùng theo từ khóa tìm kiếm
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  var filteredUsers = {}
+  if (ready) {
+    filteredUsers = users.filter(user => 
+      user.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+
+  const reloadData = async (token) => {
+    const response = await fetch(`http://localhost:8080/api/v1/users?created_at=-1&limit=25&q=&type=`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    const filteredData = data.data.data.filter(product => product.deleted_at === null)
+
+    setUsers(filteredData)
+  }
 
   const handleAddNew = () => {
     setEditing(null);
@@ -87,26 +76,87 @@ const Users = () => {
     setIsDeleteOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (userToDelete) {
-      setUsers(users.filter(u => u.id !== userToDelete.id));
-      setIsDeleteOpen(false);
-      setUserToDelete(null);
+      const token = localStorage.getItem('token');
+
+      fetch(`http://localhost:8080/api/v1/users/${userToDelete.uuid}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }).then(res => {
+        return res.json()
+      }).then(data => {
+        if (data.cide === 200) {
+          notification.success({ message: 'Xoá thành công' })
+        } else {
+          notification.error({ message: data.message })
+        }
+      }).catch(err => notification.error({ message: err.message }))
+      .finally(() => {
+        setIsDeleteOpen(false);
+        setUserToDelete(null);
+        reloadData(token)
+      });
+      
+      setIsFormOpen(false);
+      setEditing(null);
     }
   };
 
-  const handleSave = (user) => {
+  const handleSave = async (user) => {
+    const token = localStorage.getItem('token');
     if (editing) {
-      // Cập nhật người dùng
-      setUsers(users.map(u => u.id === user.id ? user : u));
+      let temp = {...user, password: user.password ?? ""}
+      fetch(`http://localhost:8080/api/v1/users/${temp.uuid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(temp),
+      }).then(response => {
+        return response.json(); // Phải gọi để lấy body JSON thực tế
+      })
+      .then(data => {
+        if (data.code === 200) {
+          notification.success({ message: 'Cập nhật thành công' })
+        } else {
+          notification.error({ message: data.message })
+        }
+      }).catch(err => notification.error({ message: err.message }))
+      .finally(() => {
+        reloadData(token)
+      })
     } else {
-      // Thêm người dùng mới với ID tự động tăng
-      const newId = Math.max(...users.map(u => u.id), 0) + 1;
-      setUsers([...users, { ...user, id: newId }]);
+      console.log(user)
+      
+      try {
+        const res = await fetch('http://localhost:8080/api/v1/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(user),
+        });
+
+        alert("User Created")
+
+        reloadData(token)
+      } catch (error) {
+        console.error('Error posting data:', error);
+      }
     }
     setIsFormOpen(false);
     setEditing(null);
   };
+
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="dashboard">
@@ -130,7 +180,7 @@ const Users = () => {
       </div>
 
       <UserList 
-        users={filteredUsers} 
+        users={users} 
         onEdit={handleEdit} 
         onDelete={handleDelete} 
       />
@@ -148,7 +198,7 @@ const Users = () => {
           product={userToDelete}
           onConfirm={confirmDelete}
           onCancel={() => setIsDeleteOpen(false)}
-          message={`Bạn có chắc chắn muốn xóa người dùng ${userToDelete?.name}?`}
+          message={`Bạn có chắc chắn muốn xóa người dùng ${userToDelete?.user_name}?`}
         />
       )}
     </div>

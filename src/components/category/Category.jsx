@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import CategoryList from './CategoryList';
 import CategoryForm from './CategoryForm';
 import DeleteConfirmation from '../../components/DeleteConfirmation';
@@ -35,6 +35,29 @@ const Category = () => {
     },
   ];
 
+  useEffect(() => {
+    fetchCategorys(); // Your API expects 1-based page numbers
+  }, []);
+  const [ready, setReady] = useState(false);
+  const fetchCategorys = async () => {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(`http://localhost:8080/api/v1/product-categories`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+    const filteredData = data.data.data.filter(product => product.deleted_at === null)
+
+    console.log(filteredData)
+
+    setCategories(filteredData)
+    setReady(true);
+  };
+
   const [categories, setCategories] = useState(sampleCategories);
   const [editing, setEditing] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -63,26 +86,92 @@ const Category = () => {
     setIsDeleteOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (categoryToDelete) {
-      setCategories(categories.filter(p => p.id !== categoryToDelete.id));
-      setIsDeleteOpen(false);
-      setCategoryToDelete(null);
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/v1/product-categories/${categoryToDelete.uuid}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log(res)
+
+        alert("Category Deleted")
+
+        setIsDeleteOpen(false);
+        setCategoryToDelete(null);
+        reloadData(token)
+      } catch (error) {
+        console.error('Error posting data:', error);
+      }
+      
+      setIsFormOpen(false);
+      setEditing(null);
     }
   };
 
-  const handleSave = (category) => {
+  const handleSave = async (category) => {
+    const token = localStorage.getItem('token');
+
     if (editing) {
-      // Cập nhật sản phẩm
-      setCategories(categories.map(p => p.id === category.id ? category : p));
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/v1/product-categories/${category.uuid}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(category),
+        });
+
+        alert("Category Updated")
+
+        reloadData(token)
+      } catch (error) {
+        console.error('Error posting data:', error);
+      }
     } else {
-      // Thêm sản phẩm mới với ID tự động tăng
-      const newId = Math.max(...categories.map(p => p.id), 0) + 1;
-      setCategories([...categories, { ...category, id: newId }]);
+      console.log(category)
+      
+      try {
+        const res = await fetch('http://localhost:8080/api/v1/product-categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(category),
+        });
+
+        alert("Category Created")
+
+        reloadData(token)
+      } catch (error) {
+        console.error('Error posting data:', error);
+      }
     }
     setIsFormOpen(false);
     setEditing(null);
   };
+
+  const reloadData = async (token) => {
+    const response = await fetch(`http://localhost:8080/api/v1/product-categories?created_at=-1&limit=25&q=&type=`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    const filteredData = data.data.data.filter(product => product.deleted_at === null)
+
+    setCategories(filteredData)
+  }
 
   return (
     <div className="dashboard">
@@ -106,7 +195,7 @@ const Category = () => {
       </div>
 
       <CategoryList 
-        categories={filteredCategories} 
+        categories={categories} 
         onEdit={handleEdit} 
         onDelete={handleDelete} 
       />

@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 
-const Login = ({ setCurrentPage }) => {
+const Login = ({ setCurrentPage }) => {  
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const [isHovered, setIsHovered] = useState(false);
 
-  const handleSubmit = (e) => {
+  
+  useEffect(() => {
+    localStorage.removeItem("token");
+    console.log('oa')
+  }, []);
+
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Dummy login check
@@ -17,6 +27,38 @@ const Login = ({ setCurrentPage }) => {
       
     } else {
       setError('Invalid credentials');
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+
+      const data = await response.json();
+
+
+      // Assuming your API returns a token
+      const token = data.data.access_token;
+      localStorage.setItem('token', token);
+      console.log(token)
+
+      alert('Login successful!');
+      setError('');
+
+      navigate('/admin/statistics');
+    } catch (err) {
+      setError(err.message || 'Login failed');
     }
   };
 
@@ -50,7 +92,7 @@ const Login = ({ setCurrentPage }) => {
           Don't have an account?{' '}
           <span>
             <NavLink
-              to={`/register`}
+              to={`/admin/register`}
               onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}
               style={{
                 color: isHovered ? 'darkblue' : 'blue',

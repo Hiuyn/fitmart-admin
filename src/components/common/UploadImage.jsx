@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
-import { Flex, message, Upload } from 'antd';
+import { Flex, notification, Upload } from 'antd';
 
 const getBase64 = file =>
   new Promise((resolve, reject) => {
@@ -10,7 +10,7 @@ const getBase64 = file =>
     reader.onerror = error => reject(error);
   });
 
-const UploadImage = ({setImage}) => {
+const UploadImage = ({value, setImage}) => {
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState();
 
@@ -31,13 +31,12 @@ const UploadImage = ({setImage}) => {
   const beforeUpload = async file => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
     if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG file!');
+      notification.error('You can only upload JPG/PNG file!');
     }
     const isLt2M = file.size / 1024 / 1024 < 2;
     if (!isLt2M) {
-      message.error('Image must smaller than 2MB!');
+      notification.error('Image must smaller than 2MB!');
     }
-    // console.log(isJpgOrPng, isLt2M, file);
 
     const fileListCustom = [
       {
@@ -54,6 +53,33 @@ const UploadImage = ({setImage}) => {
     return false;
   };
 
+  useEffect(() => {
+    console.log('useEffect: ', value)
+    if (!value || typeof value !== 'string') {
+      if (!value) {
+        setImageUrl([])
+        setImage([])
+      }
+    } else {
+      setImageUrl([
+        {
+          name: 'image',
+          uid: '-1',
+          url: value,
+          status: 'done',
+        },
+      ])
+      setImage([
+        {
+          name: 'image',
+          uid: '-1',
+          url: value,
+          status: 'done',
+        },
+      ])
+    }
+  }, [value])
+
   const uploadButton = (
     <button style={{ border: 0, background: 'none' }} type="button">
     {loading ? <LoadingOutlined /> : <PlusOutlined />}
@@ -65,11 +91,12 @@ const UploadImage = ({setImage}) => {
       action=""
       listType="picture-card"
       showUploadList={false}
-      accept=".jpg, .jpeg, .png, .jfif"
+      fileList={imageUrl}
+      accept=".jpg, .jpeg, .png"
       beforeUpload={beforeUpload}
       onPreview={handlePreview}
     >
-    {imageUrl ? <img src={imageUrl[0]?.url} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
+    {imageUrl && imageUrl.length ? <img src={imageUrl[0]?.url} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
     </Upload>
   );
 };

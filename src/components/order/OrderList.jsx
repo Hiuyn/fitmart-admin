@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const OrderList = ({ orders, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND' 
-    }).format(price);
-  };
+  console.log(orders)
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -40,56 +36,36 @@ const OrderList = ({ orders, onEdit, onDelete }) => {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
+  const navigate = useNavigate();
   return (
     <div className="product-list">
       <table>
         <thead>
           <tr className='head'>
-            <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
-            <th className='image-row'>Hình ảnh</th>
-            <th onClick={() => handleSort('name')}>Tên giỏ hàng {getSortIcon('name')}</th>
-            <th onClick={() => handleSort('category')}>Danh mục {getSortIcon('category')}</th>
-            <th onClick={() => handleSort('price')}>Giá {getSortIcon('price')}</th>
-            <th onClick={() => handleSort('stock')}>Tồn kho {getSortIcon('stock')}</th>
+            <th className='id-row' style={{width: '120px'}} onClick={() => handleSort('uuid')}>ID {getSortIcon('uuid')}</th>
+            <th style={{width: '120px'}} onClick={() => handleSort('account_id')}>ID Tài khoản {getSortIcon('account_id')}</th>
+            <th onClick={() => handleSort('payment_method')}>Cách trả tiền {getSortIcon('payment_method')}</th>
+            <th onClick={() => handleSort('status_txt')}>Status {getSortIcon('status_txt')}</th>
+            <th onClick={() => handleSort('total_fee')}>Tổng giá {getSortIcon('total_fee')}</th>
+            
             <th className='action-row'>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           {sortedOrders.length > 0 ? (
             sortedOrders.map(order => (
-              <tr key={order.id}>
-                <td>{order.id}</td>
-                <td>
-                  {order.avatar ? (
-                    <img 
-                      src={order.avatar} 
-                      alt={order.name} 
-                      className="order-avatar"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.parentNode.innerHTML = '<div class="avatar-placeholder"><i class="fas fa-question"></i></div>';
-                      }}
-                    />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      <i className="fas fa-question"></i>
-                    </div>
-                  )}
-                </td>
-                <td>{order.name}</td>
-                <td>{order.email}</td>
-                <td className='role'>
-                  {order.role}
-                </td>
-                <td className='status'>
-                  {order.status}
-                </td>
+              <tr className='item-row' key={order.id} onClick={() => navigate(`/admin/order/${order.id}`)}>
+                <td>{order.uuid}</td>
+                <td>{order.account_id}</td>
+                <td>{order.payment_method}</td>
+                <td className='status'>{order.status_txt}</td>
+                <td>{order.total_fee}</td>
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(order)}>
+                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(order)}}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(order)}>
+                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(order)}}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>

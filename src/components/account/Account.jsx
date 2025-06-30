@@ -5,58 +5,28 @@ import DeleteConfirmation from '../../components/DeleteConfirmation';
 
 const Account = () => {
   // Dữ liệu mẫu
-  const sampleAccounts = [
-    { 
-      uuid: "1",
-      user_name: "think tran",
-      email: "think@gmail.com",
-      avatar_url: "",
-      address: "",
-      created_at: "2025-05-16T08:50:58.747Z",
-      updated_at: "2025-05-16T08:50:58.747Z",
-      deleted_at: null
-    },
-    { 
-      uuid: "2",
-      user_name: "think tran",
-      email: "think@gmail.com",
-      avatar_url: "",
-      address: "",
-      created_at: "2025-05-16T08:50:58.747Z",
-      updated_at: "2025-05-16T08:50:58.747Z",
-      deleted_at: null
-    },
-    { 
-      uuid: "3",
-      user_name: "think tran",
-      email: "think@gmail.com",
-      avatar_url: "",
-      address: "",
-      created_at: "2025-05-16T08:50:58.747Z",
-      updated_at: "2025-05-16T08:50:58.747Z",
-      deleted_at: null
-    },
-    { 
-      uuid: "4",
-      user_name: "think tran",
-      email: "think@gmail.com",
-      avatar_url: "",
-      address: "",
-      created_at: "2025-05-16T08:50:58.747Z",
-      updated_at: "2025-05-16T08:50:58.747Z",
-      deleted_at: null
-    },
-    { 
-      uuid: "5",
-      user_name: "think tran",
-      email: "think@gmail.com",
-      avatar_url: "",
-      address: "",
-      created_at: "2025-05-16T08:50:58.747Z",
-      updated_at: "2025-05-16T08:50:58.747Z",
-      deleted_at: null
-    },
-  ];
+  const sampleAccounts = [];
+
+  useEffect(() => {
+    fetchAccounts(); // Your API expects 1-based page numbers
+  }, []);
+  const [ready, setReady] = useState(false);
+  const fetchAccounts = async () => {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(`http://localhost:8080/api/v1/accounts?limit=25&q=&type=`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+    const filteredData = data.data.data.filter(account => account.deleted_at === null)
+
+    setAccounts(filteredData)
+    setReady(true);
+  };
 
   const [accounts, setAccounts] = useState(sampleAccounts);
   const [editing, setEditing] = useState(null);
@@ -65,7 +35,7 @@ const Account = () => {
   const [accountToDelete, setAccountToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Lọc sản phẩm theo từ khóa tìm kiếm
+  // Lọc tài khoản theo từ khóa tìm kiếm
   const filteredAccounts = accounts.filter(account => 
     account.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     account.uuid.toLowerCase().includes(searchTerm.toLowerCase())
@@ -86,26 +56,96 @@ const Account = () => {
     setIsDeleteOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (accountToDelete) {
-      setAccounts(accounts.filter(p => p.id !== accountToDelete.id));
-      setIsDeleteOpen(false);
-      setAccountToDelete(null);
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/v1/accounts/${accountToDelete.uuid}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log(res)
+
+        alert("Account Deleted")
+
+        setIsDeleteOpen(false);
+        setAccountToDelete(null);
+        reloadData(token)
+      } catch (error) {
+        console.error('Error posting data:', error);
+      }
+      
+      setIsFormOpen(false);
+      setEditing(null);
     }
   };
 
-  const handleSave = (account) => {
+  const handleSave = async (account) => {
+    const token = localStorage.getItem('token');
+
     if (editing) {
-      // Cập nhật sản phẩm
-      setAccounts(accounts.map(p => p.id === account.id ? account : p));
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/v1/accounts/${account.uuid}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(account),
+        });
+
+        alert("Account Updated")
+
+        reloadData(token)
+      } catch (error) {
+        console.error('Error posting data:', error);
+      }
     } else {
-      // Thêm sản phẩm mới với ID tự động tăng
-      const newId = Math.max(...accounts.map(p => p.id), 0) + 1;
-      setAccounts([...accounts, { ...account, id: newId }]);
+      console.log(account)
+      
+      try {
+        const res = await fetch('http://localhost:8080/api/v1/accounts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(account),
+        });
+
+        alert("Account Created")
+
+        reloadData(token)
+      } catch (error) {
+        console.error('Error posting data:', error);
+      }
     }
     setIsFormOpen(false);
     setEditing(null);
   };
+
+    const reloadData = async (token) => {
+    const response = await fetch(`http://localhost:8080/api/v1/accounts?created_at=-1&limit=25&q=&type=`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    const filteredData = data.data.data.filter(product => product.deleted_at === null)
+
+    setAccounts(filteredData)
+  }
+
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="dashboard">
@@ -115,7 +155,7 @@ const Account = () => {
         <div className="search-bar">
           <input 
             type="text" 
-            placeholder="Tìm kiếm sản phẩm..." 
+            placeholder="Tìm kiếm tài khoản..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -124,7 +164,7 @@ const Account = () => {
           </button>
         </div>
         <button className="add-button" onClick={handleAddNew}>
-          <i className="fas fa-plus"></i> Thêm sản phẩm
+          <i className="fas fa-plus"></i> Thêm tài khoản
         </button>
       </div>
 

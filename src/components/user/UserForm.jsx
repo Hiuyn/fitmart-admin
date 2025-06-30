@@ -1,36 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import UploadImage from '../common/UploadImage';
+import {notification} from 'antd'
 
 const UserForm = ({ user, onSave, onCancel }) => {
+
   const [formData, setFormData] = useState({
-    id: user ? user.id : null,
-    name: '',
+    user_name: '',
     email: '',
     role: '',
-    status: 'Hoạt động',
-    avatar: '',
-    phone: '',
-    address: ''
+    avatar_url: '',
+    permissions: [],
+    metadata: {},
+    password: '',
   });
-
+  const [image, setImage] = useState([])
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (user) {
       setFormData({
-        id: user.id,
-        name: user.name,
+        uuid: user.uuid,
+        user_name: user.user_name,
         email: user.email,
         role: user.role,
-        status: user.status,
-        avatar: user.avatar || '',
-        phone: user.phone || '',
-        address: user.address || ''
+        avatar_url: user.avatar_url || '',
+        password: user.password,
       });
     }
   }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData({
       ...formData,
       [name]: value
@@ -40,17 +41,17 @@ const UserForm = ({ user, onSave, onCancel }) => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Họ tên không được để trống';
+    if (!formData.user_name) {
+      newErrors.user_name = 'Họ tên không được để trống';
     }
     
-    if (!formData.email.trim()) {
+    if (!formData.email) {
       newErrors.email = 'Email không được để trống';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email không hợp lệ';
     }
     
-    if (!formData.role.trim()) {
+    if (!formData.role) {
       newErrors.role = 'Vai trò không được để trống';
     }
     
@@ -62,7 +63,23 @@ const UserForm = ({ user, onSave, onCancel }) => {
     e.preventDefault();
     
     if (validateForm()) {
-      onSave(formData);
+      const formDataImage = new FormData()
+      formDataImage.append('file', image[0]?.file)
+
+      fetch(`http://localhost:8080/api/v1/uploads`, {
+        method: 'POST',
+        body: formDataImage,
+      }).then(response => {
+        return response.json(); // Phải gọi để lấy body JSON thực tế
+      })
+      .then(data => {
+        if (data.code === 200) {
+          onSave({...formData, avatar_url: data.data})
+          notification.success({ message: 'Cập nhật thành công' })
+        } else {
+          notification.error({ message: data.message })
+        }
+      }).catch(err => notification.error({ message: err.message }))
     }
   };
 
@@ -79,13 +96,26 @@ const UserForm = ({ user, onSave, onCancel }) => {
             <label htmlFor="name">Họ tên:</label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="user_name"
+              name="user_name"
+              value={formData.user_name}
               onChange={handleChange}
-              className={errors.name ? 'error' : ''}
+              className={errors.user_name ? 'error' : ''}
             />
-            {errors.name && <div className="error-message">{errors.name}</div>}
+            {errors.user_name && <div className="error-message">{errors.user_name}</div>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="name">Mật khẩu:</label>
+            <input
+              type="text"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={errors.password ? 'error' : ''}
+            />
+            {errors.password && <div className="error-message">{errors.password}</div>}
           </div>
           
           <div className="form-group">
@@ -101,76 +131,43 @@ const UserForm = ({ user, onSave, onCancel }) => {
             {errors.email && <div className="error-message">{errors.email}</div>}
           </div>
           
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="role">Vai trò:</label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className={errors.role ? 'error' : ''}
-              >
-                <option value="">-- Chọn vai trò --</option>
-                {roles.map(role => (
-                  <option key={role} value={role}>{role}</option>
-                ))}
-              </select>
-              {errors.role && <div className="error-message">{errors.role}</div>}
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="status">Trạng thái:</label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-              >
-                {statuses.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-            </div>
+          <div className="form-group">
+            <label htmlFor="role">Vai trò:</label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className={errors.role ? 'error' : ''}
+            >
+              <option value="">-- Chọn vai trò --</option>
+              {roles.map(role => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+            {errors.role && <div className="error-message">{errors.role}</div>}
           </div>
           
           <div className="form-group">
-            <label htmlFor="phone">Số điện thoại:</label>
-            <input
+            <label htmlFor="avatar_url">URL ảnh đại diện:</label>
+            {/* <input
               type="text"
-              id="phone"
-              name="phone"
-              value={formData.phone}
+              id="avatar_url"
+              name="avatar_url"
+              value={formData.avatar_url}
               onChange={handleChange}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="address">Địa chỉ:</label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="avatar">URL ảnh đại diện:</label>
-            <input
-              type="text"
-              id="avatar"
-              name="avatar"
-              value={formData.avatar}
-              onChange={handleChange}
-            />
+            /> */}
+            <UploadImage value={formData.avatar_url} setImage={(file) => {
+              setImage(file)
+            }}/>
           </div>
 
-          {formData.avatar ? (
+          
+
+          {/* {formData.avatar_url ? (
             <div className="image-preview">
               <img 
-                src={formData.avatar} 
+                src={formData.avatar_url} 
                 alt="Xem trước"
                 onError={(e) => {
                   e.target.onerror = null;
@@ -184,7 +181,7 @@ const UserForm = ({ user, onSave, onCancel }) => {
                 <i className="fas fa-question"></i>
               </div>
             </div>
-          )}
+          )} */}
           
           <div className="form-actions">
             <button type="button" className="cancel-button" onClick={onCancel}>

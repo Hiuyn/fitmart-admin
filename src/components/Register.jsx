@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
-const Register = ({ setCurrentPage }) => {
-const [user_name, setUsername] = useState('');
+const Register = () => {
+  const navigate = useNavigate();
+
+  const [user_name, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -12,7 +14,7 @@ const [user_name, setUsername] = useState('');
   const [isHovered, setIsHovered] = useState(false);
   
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -24,9 +26,37 @@ const [user_name, setUsername] = useState('');
 
     // Simulate successful registration
     setSuccess('Registration successful!');
-    console.log(user_name);
-    console.log(password)
-    // Add actual registration logic here (e.g., call to API)
+    try {
+      const response = await fetch('http://localhost:8080/api/v1/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_name: user_name,
+          email: email,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+
+      const data = await response.json();
+
+      // Assuming your API returns a token
+      const token = data.token;
+      localStorage.setItem('token', token);
+      console.log(token)
+
+      alert('Login successful!');
+      setError('');
+
+      navigate('/admin/statistics');
+    } catch (err) {
+      setError(err.message || 'Login failed');
+    }
   };
 
   return (
@@ -80,7 +110,7 @@ const [user_name, setUsername] = useState('');
         <div>
           Already have an account?{' '}
           <NavLink
-              to={`/login`}
+              to={`/admin/login`}
               onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}
               style={{
                 color: isHovered ? 'darkblue' : 'blue',

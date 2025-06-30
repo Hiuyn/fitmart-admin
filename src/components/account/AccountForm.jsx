@@ -1,181 +1,54 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Button, Tabs, Select } from 'antd';
-
-
-
-const LuaChonTabContent = ({ tabData, handleChange }) => {
-  const [title, setTitle] = useState(tabData.title)
-  const [values, setValues] = useState(tabData.values)
-  // const handleChange = (event) => {
-  //   const value = event.target.value;
-  //   setTitle(value); 
-  // }
-const options = [];
-  console.log(tabData)
-
-  return (
-    <div>
-      <div className="form-group">
-        <label>Title:</label>
-        <input
-          type="text"
-          name="title"
-          id={tabData.key}
-          value={title}
-          onChange={handleChange}
-        />
-      </div>
-      <div className="form-group">
-        <label>Values:</label>
-        <Select
-          mode="tags"
-          style={{ width: '100%' }}
-          tokenSeparators={[',']}
-          options={options}
-        />
-      </div>
-    </div>
-  );
-};
-
-const { TabPane } = Tabs;
-// const defaultPanes = new Array(2).fill(null).map((_, index) => {
-//   const id = String(index + 1);
-//   return {
-//     label: `Tab ${id}`,
-//     children: (
-//     <>
-//     <LuaChonTabContent tabName={`Tab ${index + 1}`} />
-//     </>),
-//     key: id,
-//   };
-// });
+import React, { useState, useEffect } from 'react';
 
 const AccountForm = ({ account, onSave, onCancel }) => {
-  const fileInputRef = useRef(null);
-  
-
-  const [choiceList , setChoiceList] = useState([
-    {
-      tab: "Choice 1",
-      key: 0,
-      data: {
-        title: 'empty',
-        values: [],
-      }
-    },
-  ]);
 
   const [formData, setFormData] = useState({
-    id: account ? account.id : null,
-    name: '',
-    slug: '',   //ghi nho slugify name va them thoi gian them milisecond
-
-    description: '',
-    image: '',
-
-
-
-    category: '',
-    price: 0,
-    stock: 0,
-    description: '',
+    user_name: '',
+    email: '',
+    avatar_url: '',
+    permissions: [],
+    metadata: {},
+    password: '',
+    address: "",
+    phone: "",
   });
 
 
+
   const [errors, setErrors] = useState({});
-  const [imagePreview, setImagePreview] = useState('');
 
   useEffect(() => {
     if (account) {
       setFormData({
-        id: account.id,
-        name: account.name,
-        category: account.category,
-        price: account.price,
-        stock: account.stock,
-        description: account.description || '',
-        image: account.image
+        uuid: account.uuid,
+        user_name: account.user_name,
+        email: account.email,
+        avatar_url: account.avatar_url || '',
+        password: account.password,
       });
-      setImagePreview(account.image);
     }
   }, [account]);
 
   const handleChange = (e) => {
-    console.log(e.target.value)
     const { name, value } = e.target;
+
     setFormData({
       ...formData,
       [name]: value
     });
   };
 
-  const handleOptionChange = (e) => {
-    const { name, value, id } = e.target;
-    console.log(name, value, id)
-    console.log(e.target)
-
-    console.log(typeof  id)
-
-    console.log(choiceList[id])
-
-    const updatedData = choiceList.map(choice =>
-      choice.key == id
-        ? {
-            ...choice,
-            data: {
-              ...choice.data,
-              [name]: value,
-            }
-          }
-        : choice
-    );
-
-    console.log(updatedData)
-
-    setChoiceList(updatedData)
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData({
-          ...formData,
-          image: reader.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current.click();
-  };
-
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Tên sản phẩm không được để trống';
-    }
-
-    if (!formData.slug.trim()) {
-      newErrors.slug = 'Slug sản phẩm không được để trống';
+    if (!formData.user_name) {
+      newErrors.user_name = 'Họ tên không được để trống';
     }
     
-    if (!formData.category.trim()) {
-      newErrors.category = 'Danh mục không được để trống';
-    }
-    
-    if (formData.price <= 0) {
-      newErrors.price = 'Giá phải lớn hơn 0';
-    }
-    
-    if (formData.stock < 0) {
-      newErrors.stock = 'Số lượng không được âm';
+    if (!formData.email) {
+      newErrors.email = 'Email không được để trống';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email không hợp lệ';
     }
     
     setErrors(newErrors);
@@ -184,266 +57,126 @@ const AccountForm = ({ account, onSave, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     
     if (validateForm()) {
+          console.log('asd')
+
       onSave(formData);
     }
   };
 
-  const priceFormatter = new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  });
-
-  const categories = [
-    'Giày', 'Quần áo', 'Dụng cụ', 'Phụ kiện', 'Thiết bị tập luyện'
-  ];
-
-
-
-
-
-
-  const [activeKey, setActiveKey] = useState(choiceList[0].key);
-  const onChange = newActiveKey => {
-    setActiveKey(newActiveKey);
-  };
-  const add = () => {
-    const newKey = `${choiceList.length + 1}`;
-    const newTab = {
-      key: `${newKey}`,
-      tab: `Choice ${choiceList.length + 1}`,
-    };
-    setChoiceList((prevTabs) => [...prevTabs, newTab]);
-
-    const newChoice = {
-      id: newKey,
-      size: "idk",
-      color: "idk",
-    };
-
-    // setChoices((prevChoice) => [...prevChoice, newChoice]);
-
-    setActiveKey(newKey);
-  };
-  const remove = targetKey => {
-    if (choiceList.length === 1) {
-      return;
-    }
-    let newActiveKey = targetKey;
-    let lastIndex;
-
-    choiceList.forEach((tab, i) => {
-      if (tab.key === targetKey) {
-        lastIndex = i - 1;
-      }
-    });
-    console.log(lastIndex)
-
-    const filteredTabs = choiceList.filter((tab) => tab.key !== targetKey);
-    if (filteredTabs.length && newActiveKey === targetKey) {
-      if (lastIndex >= 0) {
-        newActiveKey = filteredTabs[lastIndex].key;
-      } else {
-        newActiveKey = filteredTabs[0].key;
-      }
-    }
-    for (let i = 0; i < filteredTabs.length; i++) {
-      filteredTabs[i].tab = `Choice ${i + 1}`;
-      filteredTabs[i].key = `${i + 1}`;
-    }
-    console.log(filteredTabs)
-    setChoiceList(filteredTabs);
-
-    // const filteredChoice = choices.filter((choice) => choice.id !== targetKey);
-    // for (let i = 0; i < filteredChoice.length; i++) {
-    //   filteredChoice[i].id = i + 1;
-    // }
-    // console.log(filteredChoice)
-
-    // setChoices(filteredChoice);
-
-    setActiveKey(newActiveKey);
-  };
-  const onEdit = (targetKey, action) => {
-    console.log(action);
-    if (action === 'add') {
-      add();
-    } else {
-      remove(targetKey);
-    }
-  };
-
-
-
   return (
     <div className="modal-overlay">
-      <div className="product-form-modal" style={{width: '80%'}}>
-        <h2>{account ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}</h2>
-        <form onSubmit={handleSubmit}>
-          <Tabs defaultActiveKey="1" onChange={(key) => console.log(key)}>
-            <TabPane tab="Thông tin sản phẩm" key="1">
-              <div className="form-group">
-                <label htmlFor="name">Tên sản phẩm:</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={errors.name ? 'error' : ''}
-                />
-                {errors.name && <div className="error-message">{errors.name}</div>}
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="name">Slug:</label>
-                <input
-                  type="text"
-                  id="slug"
-                  name="slug"
-                  value={formData.slug}
-                  onChange={handleChange}
-                  className={errors.slug ? 'error' : ''}
-                />
-                {errors.slug && <div className="error-message">{errors.slug}</div>}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="description">Mô tả sản phẩm:</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows="4"
-                  className={errors.description ? 'error' : ''}
-                ></textarea>
-                {errors.description && <div className="error-message">{errors.description}</div>}
-              </div>
-              
-              <div className="form-group">
-                <label>Hình ảnh sản phẩm:</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={fileInputRef}
-                  style={{ display: 'none' }}
-                  onChange={handleImageChange}
-                />
-                <div className="file-upload-container">
-                  <button 
-                    type="button" 
-                    className="file-upload-button"
-                    onClick={triggerFileInput}
-                  >
-                    <i className="fas fa-upload"></i> Chọn ảnh từ máy tính
-                  </button>
-                  <span className="file-name">
-                    {imagePreview ? 'Đã chọn ảnh' : 'Chưa chọn ảnh nào'}
-                  </span>
-                </div>
-
-                {imagePreview && (
-                  <div className="image-preview">
-                    <img 
-                      src={imagePreview} 
-                      alt="Xem trước"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.parentNode.innerHTML = '<div class="image-placeholder"><i class="fas fa-image"></i></div>';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={onCancel}>
-                  Hủy
-                </button>
-                <button type="submit" className="save-button">
-                  Tiếp theo
-                </button>
-              </div>
-            </TabPane>
-            
-            <TabPane tab="Lựa chọn" key="2">
-              <div style={{ marginBottom: 16 }}>
-                <Button onClick={add}>ADD</Button>
-              </div>
-              <Tabs
-                type="editable-card"
-                hideAdd
-                onChange={onChange}
-                defaultActiveKey="1"
-                onEdit={onEdit}
-              >
-                {choiceList.map((info, x) => {
-                  return (
-                    <TabPane tab={info.tab} key={info.key}>
-                      <LuaChonTabContent tabData={info} handleChange={handleOptionChange}></LuaChonTabContent>
-                    </TabPane> 
-                  );
-                })}
-              </Tabs>
-              <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={onCancel}>
-                  Hủy
-                </button>
-                <button type="submit" className="save-button">
-                  Tiếp theo
-                </button>
-              </div>
-            </TabPane>
-             header |  title | sku | barcode | weight | height | width | length |inventory_quantity |options |prices|
-            body  | input  title | input sku | input barcode | input weight | input height | input width | input length | input inventory_quantity | show options | input prices|
-            
-            <TabPane tab="Variant" key="3">
-              <table border="1">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>SKU</th>
-                    <th>Barcode</th>
-                    <th>Weight</th>
-                    <th>Height</th>
-                    <th>Wwidth</th>
-                    <th>Length</th>
-                    <th>Inventory quantity</th>
-                    <th>Options</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><input type="text" name="title" /></td>
-                    <td><input type="text" name="sku" /></td>
-                    <td><input type="text" name="barcode" /></td>
-                    <td><input type="number" step="any" name="weight" /></td>
-                    <td><input type="number" step="any" name="height" /></td>
-                    <td><input type="number" step="any" name="width" /></td>
-                    <td><input type="number" step="any" name="length" /></td>
-                    <td><input type="number" name="inventory_quantity" /></td>
-                    <td><button type="button">Show Options</button></td>
-                  </tr>
-                </tbody>
-              </table>
-              
-            <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={onCancel}>
-                  Hủy
-                </button>
-                <button type="submit" className="save-button">
-                  {account ? 'Cập nhật' : 'Thêm mới'}
-                </button>
-              </div>
-            </TabPane>
-          </Tabs>
-        </form>
+      <div className="user-form-modal">
+        <h2>{account ? 'Chỉnh sửa tài khoản' : 'Thêm tài khoản mới'}</h2>
         
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">Họ tên:</label>
+            <input
+              type="text"
+              id="user_name"
+              name="user_name"
+              value={formData.user_name}
+              onChange={handleChange}
+              className={errors.user_name ? 'error' : ''}
+            />
+            {errors.user_name && <div className="error-message">{errors.user_name}</div>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="name">Mật khẩu:</label>
+            <input
+              type="text"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={errors.password ? 'error' : ''}
+            />
+            {errors.password && <div className="error-message">{errors.password}</div>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={errors.email ? 'error' : ''}
+            />
+            {errors.email && <div className="error-message">{errors.email}</div>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="address">Địa chỉ:</label>
+            <input
+              type="text"
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              className={errors.address ? 'error' : ''}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="name">Số điện thoại:</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className={errors.phone ? 'error' : ''}
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="avatar_url">URL ảnh đại diện:</label>
+            <input
+              type="text"
+              id="avatar_url"
+              name="avatar_url"
+              value={formData.avatar_url}
+              onChange={handleChange}
+            />
+          </div>
+
+          {formData.avatar_url ? (
+            <div className="image-preview">
+              <img 
+                src={formData.avatar_url} 
+                alt="Xem trước"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.parentNode.innerHTML = '<div class="avatar-placeholder large"><i class="fas fa-question"></i></div>';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="image-preview">
+              <div className="avatar-placeholder large">
+                <i className="fas fa-question"></i>
+              </div>
+            </div>
+          )}
+          
+          <div className="form-actions">
+            <button type="button" className="cancel-button" onClick={onCancel}>
+              Hủy
+            </button>
+            <button type="submit" className="save-button">
+              {account ? 'Cập nhật' : 'Thêm mới'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
-export default AccountForm;
+export default AccountForm; 

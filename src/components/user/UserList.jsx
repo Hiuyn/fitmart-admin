@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+// import ReactPaginate from 'react-paginate';
+import { useNavigate } from 'react-router-dom';
 
 const UserList = ({ users, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
+
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -33,12 +36,13 @@ const UserList = ({ users, onEdit, onDelete }) => {
     return sortDirection === 'asc' ? '▲' : '▼';
   };
 
+  const navigate = useNavigate();
   return (
     <div className="user-list">
       <table>
         <thead>
           <tr>
-            <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
+            <th className='id-row' style={{width: '120px'}} onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
             <th className='user-icon-row'>Ảnh đại diện</th>
             <th onClick={() => handleSort('name')}>Họ tên {getSortIcon('name')}</th>
             <th onClick={() => handleSort('email')}>Email {getSortIcon('email')}</th>
@@ -50,12 +54,12 @@ const UserList = ({ users, onEdit, onDelete }) => {
         <tbody>
           {sortedUsers.length > 0 ? (
             sortedUsers.map(user => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
+                <tr className='item-row' key={user.uuid} onClick={() => navigate(`/admin/users/${user.uuid}`)}>
+                <td>{user.uuid}</td>
                 <td>
-                  {user.avatar ? (
+                  {user.avatar_url ? (
                     <img 
-                      src={user.avatar} 
+                      src={user.avatar_url} 
                       alt={user.name} 
                       className="user-avatar"
                       onError={(e) => {
@@ -69,7 +73,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
                     </div>
                   )}
                 </td>
-                <td>{user.name}</td>
+                <td>{user.user_name}</td>
                 <td>{user.email}</td>
                 <td className='role'>
                   <div>
@@ -87,10 +91,10 @@ const UserList = ({ users, onEdit, onDelete }) => {
                 </td> */}
                 <td className="actions">
                   <div>
-                    <button className="edit-button" onClick={() => onEdit(user)}>
+                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(user)}}>
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="delete-button" onClick={() => onDelete(user)}>
+                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(user)}}>
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>

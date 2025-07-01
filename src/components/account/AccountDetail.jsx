@@ -1,122 +1,89 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Button, Card, Col, Row, Tag } from 'antd';
 import AccountForm from './AccountForm';
 
 const AccountDetail = () => {
-  const { id } = useParams(); // gets the ":id" from the URL
-
-  const editing = true;
+  const { id } = useParams();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [account, setAccount] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleEdit = () => {
-    setIsFormOpen(true);
-  };
-
-  const sampleAccount = {
-    uuid: "FM9a7113c1",
-    name: "think tran",
-    email: "think@gmail.com",
-    avatar_url: "",
-    address: "",
-    created_at: "2025-05-16T08:50:58.747Z",
-    updated_at: "2025-05-16T08:50:58.747Z",
-    deleted_at: null
-  };
-
-  const [account, setAccount] = useState({});
-
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetchUsers(); // Your API expects 1-based page numbers
-  }, []);
-  const [ready, setReady] = useState(false);
-  const fetchUsers = async () => {
-    const token = localStorage.getItem('token');
+    fetchAccount();
+  }, [id]);
 
-    const responseDetail = await fetch(`http://localhost:8080/api/v1/accounts/${id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await responseDetail.json();
-
-    console.log(data)
-
-    setAccount(data)
-
-    console.log(account)
-
-    setReady(true);
+  const fetchAccount = async () => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/accounts/${id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (data.code === 200) {
+        setAccount(data.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleEdit = () => setIsFormOpen(true);
 
-  const handleSave = (account) => {
+  const handleSave = () => {
     setIsFormOpen(false);
+    fetchAccount(); // Reload sau khi lưu
   };
 
-  if (!ready) {
-    return <div>Loading...</div>;
-  }
+  const renderInfoRow = (label, value) => (
+    <Row key={label} style={{ marginBottom: '8px' }}>
+      <Col span={12} style={{ fontWeight: 600 }}>{label}:</Col>
+      <Col span={12}>{value}</Col>
+    </Row>
+  );
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="dashboard">
-      <div>
-        <h1>Chi tiết tài khoản: </h1>
-      
-        <div className='detail-actions'>
-          <button className="detail-edit-button" onClick={(e) => {e.stopPropagation(); handleEdit(sampleAccount)}} style={{display: 'flex', gap: '.5rem', paddingRight: '30px', paddingLeft: '30px'}}>
-            <i className="fas fa-edit"></i>
-            <div>Sửa</div>
-          </button>
-          <button className="detail-delete-button" onClick={(e) => {e.stopPropagation();}} style={{display: 'flex', gap: '.5rem', paddingRight: '30px', paddingLeft: '30px'}}>
-            <i className="fas fa-trash"></i>
-            <div>Xoá</div>
-          </button>
-        </div>
-      </div>
+      <Row align="center">
+        <Col span={12}>
+          <h1>Chi tiết tài khoản</h1>
+        </Col>
+        <Col span={12} style={{textAlign: 'end'}}>
+          <Button type="primary" onClick={handleEdit} style={{ marginRight: '10px' }}>
+            <i className="fas fa-edit"></i> Sửa
+          </Button>
+          <Button danger><i className="fas fa-trash"></i> Xoá</Button>
+        </Col>
+      </Row>
 
-      <div className="product-list">
-        <table className='detail-table'>
-          <tbody>
-            <tr className='head'>
-              <th className='id-row fart' style={{width: '125px'}}>ID</th>
-              <td>{account.uuid}</td>
-            </tr>
-            <tr>
-              <th>Username</th>
-              <td>{account.user_name}</td>
-            </tr>
-            <tr>
-              <th>Email</th>
-              <td>{account.email}</td>
-            </tr>
-            <tr>
-              <th>Ảnh đại diện</th>
-              <td>{account.avatar_url}</td>
-            </tr>
-            <tr>
-              <th>Địa chỉ</th>
-              <td>{account.address}</td>
-            </tr>
-            <tr>
-              <th>Số điện thoại</th>
-              <td>{account.phone}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <Card title="Thông tin tài khoản" bordered={false}>
+        {renderInfoRow("Mã tài khoản", account.uuid)}
+        {renderInfoRow("Tên người dùng", account.user_name)}
+        {renderInfoRow("Email", account.email)}
+        {renderInfoRow("Ảnh đại diện", account.avatar_url ? (
+          <img src={account.avatar_url} alt="Avatar" style={{ width: 60, height: 60, borderRadius: '50%' }} />
+        ) : 'Chưa có')}
+        {renderInfoRow("Địa chỉ", account.address)}
+        {renderInfoRow("Số điện thoại", account.phone)}
+      </Card>
 
       {isFormOpen && (
-        <AccountForm 
-          account={account} 
-          onSave={handleSave} 
-          onCancel={() => setIsFormOpen(false)} 
+        <AccountForm
+          account={account}
+          onSave={handleSave}
+          onCancel={() => setIsFormOpen(false)}
         />
       )}
     </div>
   );
 };
 
-export default AccountDetail; 
+export default AccountDetail;

@@ -1,86 +1,94 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import CategoryForm from './CategoryForm';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Button, Card, Col, Row, Tag, notification } from "antd";
+import CategoryForm from "./CategoryForm";
 
 const CategoryDetail = () => {
-  const { id } = useParams(); // gets the ":id" from the URL
-
-  const editing = true;
+  const { id } = useParams();
+  const [category, setCategory] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const token = localStorage.getItem("token");
 
-  const handleEdit = () => {
-    setIsFormOpen(true);
+  useEffect(() => {
+    if (id) fetchCategory();
+  }, [id]);
+
+  const fetchCategory = () => {
+    fetch(`http://localhost:8080/api/v1/product-categories/${id}`, {
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then(({ code, data }) => {
+        if (code === 200) setCategory(data);
+      })
+      .catch(console.error);
   };
 
-  const sampleCategory = {
-    uuid: "FM9a7113c1",
-    name: "think tran",
-    email: "think@gmail.com",
-    avatar_url: "",
-    address: "",
-    created_at: "2025-05-16T08:50:58.747Z",
-    updated_at: "2025-05-16T08:50:58.747Z",
-    deleted_at: null
+  const handleDelete = () => {
+    fetch(`http://localhost:8080/api/v1/product-categories/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then(({ code, message }) => {
+        if (code === 200) {
+          notification.success({ message: "Xoá danh mục thành công" });
+        } else {
+          notification.error({ message });
+        }
+      })
+      .catch(() => notification.error({ message: "Lỗi kết nối server" }));
   };
 
-
-  const handleSave = (category) => {
-    setIsFormOpen(false);
-  };
+  const renderInfoRow = (label, value) => (
+    <Row key={label} style={{ marginBottom: 8 }}>
+      <Col span={8} style={{ fontWeight: 600 }}>{label}:</Col>
+      <Col span={16}>{value}</Col>
+    </Row>
+  );
 
   return (
     <div className="dashboard">
-      <div>
-        <h1>Chi tiết danh mục: </h1>
-      
-        <div className='detail-actions'>
-          <button className="detail-edit-button" onClick={(e) => {e.stopPropagation(); handleEdit(sampleCategory)}} style={{display: 'flex', gap: '.5rem', paddingRight: '30px', paddingLeft: '30px'}}>
-            <i className="fas fa-edit"></i>
-            <div>Sửa</div>
-          </button>
-          <button className="detail-delete-button" onClick={(e) => {e.stopPropagation();}} style={{display: 'flex', gap: '.5rem', paddingRight: '30px', paddingLeft: '30px'}}>
-            <i className="fas fa-trash"></i>
-            <div>Xoá</div>
-          </button>
-        </div>
-      </div>
+      <Row align="middle">
+        <Col span={12}>
+          <h1>Chi tiết danh mục</h1>
+        </Col>
+        <Col span={12} style={{ textAlign: "end" }}>
+          <Button type="primary" onClick={() => setIsFormOpen(true)} style={{ marginRight: 10 }}>
+            <i className="fas fa-edit"></i> Sửa
+          </Button>
+          <Button danger onClick={handleDelete}>
+            <i className="fas fa-trash"></i> Xoá
+          </Button>
+        </Col>
+      </Row>
 
-      <div className="product-list">
-        <table className='detail-table'>
-          <tbody>
-            <tr className='head'>
-              <th className='id-row fart' style={{width: '125px'}}>ID</th>
-              <td>{id}</td>
-            </tr>
-            <tr>
-              <th>Tên danh mục</th>
-              <td></td>
-            </tr>
-            <tr>
-              <th>Nội dung</th>
-              <td></td>
-            </tr>
-            <tr>
-              <th>Handle</th>
-              <td></td>
-            </tr>
-            <tr>
-              <th>Đang hoạt động</th>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <Card title="Thông tin danh mục">
+        {category ? (
+          <>
+            {renderInfoRow("ID", category.uuid)}
+            {renderInfoRow("Tên danh mục", category.title)}
+            {renderInfoRow("Mô tả", category.description)}
+            {renderInfoRow("Handle", category.handle)}
+            {renderInfoRow("Trạng thái", category.deleted_at ? <Tag color="red">Đã xoá</Tag> : <Tag color="green">Hoạt động</Tag>)}
+          </>
+        ) : (
+          <div>Đang tải dữ liệu...</div>
+        )}
+      </Card>
 
       {isFormOpen && (
-        <CategoryForm 
-          category={editing} 
-          onSave={handleSave} 
-          onCancel={() => setIsFormOpen(false)} 
+        <CategoryForm
+          category={category}
+          onSave={() => {
+            setIsFormOpen(false);
+            fetchCategory();
+          }}
+          onCancel={() => setIsFormOpen(false)}
         />
       )}
     </div>
   );
 };
 
-export default CategoryDetail; 
+export default CategoryDetail;

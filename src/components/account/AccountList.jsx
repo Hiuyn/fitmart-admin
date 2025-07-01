@@ -1,111 +1,96 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EyeOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
-
+import { Table, Avatar, Button, Space } from 'antd';
+import { EyeOutlined, EditOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
 
 const AccountList = ({ accounts, onEdit, onDelete }) => {
-  const [sortField, setSortField] = useState('id');
-  const [sortDirection, setSortDirection] = useState('asc');
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND' 
-    }).format(price);
-  };
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const sortedAccounts = [...accounts].sort((a, b) => {
-    if (sortField === 'price' || sortField === 'stock' || sortField === 'id') {
-      return sortDirection === 'asc' 
-        ? a[sortField] - b[sortField]
-        : b[sortField] - a[sortField];
-    } else {
-      const aValue = typeof a[sortField] === 'string' ? a[sortField] : String(a[sortField]);
-      const bValue = typeof b[sortField] === 'string' ? b[sortField] : String(b[sortField]);
-      
-      return sortDirection === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-  });
-
-  const getSortIcon = (field) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? '▲' : '▼';
-  };
-
   const navigate = useNavigate();
+
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'uuid',
+      key: 'uuid',
+      width: 150,
+      sorter: (a, b) => a.uuid.localeCompare(b.uuid),
+    },
+    {
+      title: 'Hình ảnh',
+      dataIndex: 'avatar_url',
+      key: 'avatar_url',
+      render: (url) =>
+        url ? (
+          <Avatar src={url} size={40} />
+        ) : (
+          <Avatar icon={<UserOutlined />} size={40} />
+        ),
+      width: 100,
+    },
+    {
+      title: 'Tên tài khoản',
+      dataIndex: 'user_name',
+      key: 'user_name',
+      sorter: (a, b) => a.user_name.localeCompare(b.user_name),
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+      sorter: (a, b) => a.email.localeCompare(b.email),
+    },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      render: (_, record) => (
+        <div
+          style={{
+            width: '72px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '8px',
+            justifyItems: 'center', // Căn giữa từng nút theo chiều ngang
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            color='default'
+            variant='filled'
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/admin/accounts/${record.uuid}`)}
+          />
+          <Button
+            color='primary'
+            variant='filled'
+            icon={<EditOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(record);
+            }}
+          />
+          <Button
+            color='danger'
+            variant='filled'
+            icon={<DeleteOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(record);
+            }}
+          />
+        </div>
+      ),
+      width: 100,
+      align: 'center',
+    },
+  ];
+
   return (
-    <div className="product-list">
-      <table>
-        <thead>
-          <tr className='head-account'>
-            <th className='id-row' style={{width: '120px'}} onClick={() => handleSort('uuid')}>ID {getSortIcon('uuid')}</th>
-            <th className='image-row'>Hình ảnh</th>
-            <th onClick={() => handleSort('user_name')}>Tên tài khoản {getSortIcon('user_name')}</th>
-            <th onClick={() => handleSort('email')}>Email {getSortIcon('email')}</th>
-            <th className='action-row'>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedAccounts.length > 0 ? (
-            sortedAccounts.map(account => (
-              <tr className='item-row' key={account.id}>
-                <td>{account.uuid}</td>
-                <td>
-                  {account.avatar_url ? (
-                    <img 
-                      src={account.avatar_url} 
-                      alt={account.name} 
-                      className="user-avatar"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.parentNode.innerHTML = '<div class="avatar-placeholder"><i class="fas fa-question"></i></div>';
-                      }}
-                    />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      <i className="fas fa-question"></i>
-                    </div>
-                  )}
-                </td>
-                <td>{account.user_name}</td>
-                <td>{account.email}</td>
-                <td className="actions">
-                  <div style={{display: 'grid', gap: '10px', gridTemplateColumns: "auto auto"}}>
-                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(account)}}>
-                      <i className="fas fa-edit"></i>
-                    </button>
-                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(account)}}>
-                      <i className="fas fa-trash"></i>
-                    </button>
-                    <Button color="pink" onClick={() => navigate(`/admin/accounts/${account.uuid}`)}  icon={<EyeOutlined /> } />
-                    {/* <button className="show-button" >
-                      <i className="fas fa-show"></i>
-                    </button> */}
-                  </div>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" className="no-data">Không có người dùng nào</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <Table
+      rowKey="uuid"
+      dataSource={accounts}
+      columns={columns}
+      pagination={{ pageSize: 10 }}
+    />
   );
 };
 
-export default AccountList; 
+export default AccountList;

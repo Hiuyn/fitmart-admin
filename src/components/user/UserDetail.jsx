@@ -1,88 +1,85 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Button, Card, Col, Row, Tag } from 'antd';
 import UserForm from './UserForm';
 
-
 const UserDetail = () => {
-  const { id } = useParams(); // gets the ":id" from the URL
-
+  const { id } = useParams();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleEdit = () => {
-    setIsFormOpen(true);
-  };
-
-  const [user, setUser] = useState({});
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetchUsers(); // Your API expects 1-based page numbers
-  }, []);
-  const [ready, setReady] = useState(false);
-  const fetchUsers = async () => {
-    const token = localStorage.getItem('token');
+    fetchUser();
+  }, [id]);
 
-    const response = await fetch(`http://localhost:8080/api/v1/users/${id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-
-    const data = await response.json();
-    console.log(data)
-
-    setUser(data)
+  const fetchUser = async () => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/users/${id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (data.code === 200) setUser(data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-
-  const handleSave = (order) => {
+  const handleEdit = () => setIsFormOpen(true);
+  const handleSave = () => {
     setIsFormOpen(false);
+    fetchUser(); // Load lại data sau khi edit
   };
+
+  const renderInfoRow = (label, value) => (
+    <Row key={label} style={{ marginBottom: '8px' }}>
+      <Col span={8} style={{ fontWeight: 600 }}>{label}:</Col>
+      <Col span={16}>{value}</Col>
+    </Row>
+  );
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="dashboard">
-      <div>
-        <h1>Chi tiết người dùng: </h1>
-      
-        <div className='detail-actions'>
-          <button className="detail-edit-button" onClick={(e) => {e.stopPropagation(); handleEdit()}} style={{display: 'flex', gap: '.5rem', paddingRight: '30px', paddingLeft: '30px'}}>
-            <i className="fas fa-edit"></i>
-            <div>Sửa</div>
-          </button>
-          <button className="detail-delete-button" onClick={(e) => {e.stopPropagation();}} style={{display: 'flex', gap: '.5rem', paddingRight: '30px', paddingLeft: '30px'}}>
-            <i className="fas fa-trash"></i>
-            <div>Xoá</div>
-          </button>
-        </div>
-      </div>
+      <Row align="center">
+        <Col span={12}>
+          <h1>Chi tiết người dùng</h1>
+        </Col>
+        <Col span={12} style={{textAlign: 'end'}}>
+          <Button type="primary" onClick={handleEdit} style={{ marginRight: '10px' }}>
+            <i className="fas fa-edit"></i> Sửa
+          </Button>
+          <Button danger><i className="fas fa-trash"></i> Xoá</Button>
+        </Col>
+      </Row>
 
-      <div className="product-list">
-        <table className='detail-table'>
-          <tbody>
-            <tr className='head'>
-              <th className='id-row fart' style={{width: '140px'}}>ID</th>
-              <td>{user.uuid}</td>
-            </tr>
-            <tr>
-              <th>Tên người dùng</th>
-              <td>{user.user_name}</td>
-            </tr>
-            <tr>
-              <th>Email</th>
-              <td>{user.email}</td>
-            </tr>
-            <tr>
-              <th>Role</th>
-              <td>{user.role}</td>
-            </tr>
-            <tr>
-              <th>Avatar</th>
-              <td>{user.avatar_url}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <Card title="Thông tin người dùng" bordered={false}>
+        {renderInfoRow("Mã người dùng", user.uuid)}
+        {renderInfoRow("Tên người dùng", user.user_name)}
+        {renderInfoRow("Email", user.email)}
+        {renderInfoRow("Role", user.role)}
+        <Row style={{ marginBottom: '8px' }}>
+          <Col span={8} style={{ fontWeight: 600 }}>Permissions:</Col>
+          <Col span={16}>
+            {user.permissions && user.permissions.length > 0 ? (
+              user.permissions.map((per, idx) => (
+                <Tag key={idx} color="blue">{per}</Tag>
+              ))
+            ) : ''}
+          </Col>
+        </Row>
+        {renderInfoRow("Avatar", user.avatar_url ? (
+          <img src={user.avatar_url} alt="Avatar" style={{ width: 60, height: 60, borderRadius: '50%' }} />
+        ) : 'Chưa có')}
+      </Card>
 
       {isFormOpen && (
         <UserForm 
@@ -95,4 +92,4 @@ const UserDetail = () => {
   );
 };
 
-export default UserDetail; 
+export default UserDetail;

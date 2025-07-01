@@ -1,86 +1,102 @@
-import React, { useState } from 'react';
+import { Table, Button, Tag } from 'antd';
+import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import React from 'react';
 
 const OrderList = ({ orders, onEdit, onDelete }) => {
-  const [sortField, setSortField] = useState('id');
-  const [sortDirection, setSortDirection] = useState('asc');
-
-  console.log(orders)
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const sortedOrders = [...orders].sort((a, b) => {
-    if (sortField === 'price' || sortField === 'stock' || sortField === 'id') {
-      return sortDirection === 'asc' 
-        ? a[sortField] - b[sortField]
-        : b[sortField] - a[sortField];
-    } else {
-      const aValue = typeof a[sortField] === 'string' ? a[sortField] : String(a[sortField]);
-      const bValue = typeof b[sortField] === 'string' ? b[sortField] : String(b[sortField]);
-      
-      return sortDirection === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-  });
-
-  const getSortIcon = (field) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? '▲' : '▼';
-  };
-
   const navigate = useNavigate();
+
+  const columns = [
+    {
+      title: 'Mã đơn',
+      dataIndex: 'uuid',
+      key: 'uuid',
+    },
+    {
+      title: 'Tài khoản',
+      dataIndex: 'account_id',
+      key: 'account_id',
+    },
+    {
+      title: 'Thanh toán',
+      dataIndex: 'payment_method',
+      key: 'payment_method',
+      render: (method) => <Tag color="blue">{method}</Tag>,
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status_txt',
+      key: 'status_txt',
+      render: (text, record) => {
+        let color = 'blue';
+        if (record.status === 99) color = 'red';
+        else if (record.status === 1) color = 'orange';
+        else if (record.status === 2) color = 'green';
+
+        return <Tag color={color}>{text}</Tag>;
+      },
+    },
+    {
+      title: 'Tổng tiền',
+      dataIndex: 'total_fee',
+      key: 'total_fee',
+      render: (fee) =>
+        new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND',
+        }).format(fee),
+    },
+    {
+      title: 'Thao tác',
+      key: 'action',
+      render: (_, record) => (
+        <div
+          style={{
+            width: '72px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '8px',
+            justifyItems: 'center', // Căn giữa từng nút theo chiều ngang
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            color='default'
+            variant='filled'
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/admin/order/${record.uuid}`)}
+          />
+          <Button
+            color='primary'
+            variant='filled'
+            icon={<EditOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(record);
+            }}
+          />
+          <Button
+            color='danger'
+            variant='filled'
+            icon={<DeleteOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(record);
+            }}
+          />
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="product-list">
-      <table>
-        <thead>
-          <tr className='head'>
-            <th className='id-row' style={{width: '120px'}} onClick={() => handleSort('uuid')}>ID {getSortIcon('uuid')}</th>
-            <th style={{width: '120px'}} onClick={() => handleSort('account_id')}>ID Tài khoản {getSortIcon('account_id')}</th>
-            <th onClick={() => handleSort('payment_method')}>Cách trả tiền {getSortIcon('payment_method')}</th>
-            <th onClick={() => handleSort('status_txt')}>Status {getSortIcon('status_txt')}</th>
-            <th onClick={() => handleSort('total_fee')}>Tổng giá {getSortIcon('total_fee')}</th>
-            
-            <th className='action-row'>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedOrders.length > 0 ? (
-            sortedOrders.map(order => (
-              <tr className='item-row' key={order.id} onClick={() => navigate(`/admin/order/${order.id}`)}>
-                <td>{order.uuid}</td>
-                <td>{order.account_id}</td>
-                <td>{order.payment_method}</td>
-                <td className='status'>{order.status_txt}</td>
-                <td>{order.total_fee}</td>
-                <td className="actions">
-                  <div>
-                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(order)}}>
-                      <i className="fas fa-edit"></i>
-                    </button>
-                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(order)}}>
-                      <i className="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" className="no-data">Không có người dùng nào</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <Table
+      rowKey="uuid"
+      columns={columns}
+      dataSource={orders}
+      pagination={{ pageSize: 10 }}
+    />
   );
 };
 
-export default OrderList; 
+export default OrderList;

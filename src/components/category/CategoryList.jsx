@@ -1,83 +1,120 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Table, Button, Tooltip, Space, Tag } from 'antd';
+import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 
 const CategoryList = ({ categories, onEdit, onDelete }) => {
-  const [sortField, setSortField] = useState('id');
-  const [sortDirection, setSortDirection] = useState('asc');
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const sortedCategories = [...categories].sort((a, b) => {
-    if (sortField === 'description' || sortField === 'stock' || sortField === 'id') {
-      return sortDirection === 'asc' 
-        ? a[sortField] - b[sortField]
-        : b[sortField] - a[sortField];
-    } else {
-      const aValue = typeof a[sortField] === 'string' ? a[sortField] : String(a[sortField]);
-      const bValue = typeof b[sortField] === 'string' ? b[sortField] : String(b[sortField]);
-      
-      return sortDirection === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-  });
-
-  const getSortIcon = (field) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? '▲' : '▼';
-  };
-
   const navigate = useNavigate();
+  const [sorter, setSorter] = useState({ field: 'id', order: 'ascend' });
+
+  const handleTableChange = (pagination, filters, sorterObj) => {
+    if (sorterObj.order) {
+      setSorter({
+        field: sorterObj.field,
+        order: sorterObj.order,
+      });
+    } else {
+      setSorter({ field: 'id', order: 'ascend' });
+    }
+  };
+
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'uuid',
+      key: 'uuid',
+      sorter: (a, b) => a.uuid.localeCompare(b.uuid),
+      sortOrder: sorter.field === 'uuid' ? sorter.order : null,
+    },
+    {
+      title: 'Tên danh mục',
+      dataIndex: 'title',
+      key: 'title',
+      sorter: (a, b) => a.title.localeCompare(b.title),
+      sortOrder: sorter.field === 'title' ? sorter.order : null,
+    },
+    {
+      title: 'Mô tả',
+      dataIndex: 'description',
+      key: 'description',
+      sorter: (a, b) => (a.description || '').localeCompare(b.description || ''),
+      sortOrder: sorter.field === 'description' ? sorter.order : null,
+    },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'is_active',
+      key: 'is_active',
+      render: (is_active) =>
+        is_active ? (
+          <Tag color="green">Hoạt động</Tag>
+        ) : (
+          <Tag color="red">Ngừng hoạt động</Tag>
+        ),
+      filters: [
+        { text: 'Hoạt động', value: true },
+        { text: 'Ngừng hoạt động', value: false },
+      ],
+      onFilter: (value, record) => record.is_active === value,
+    },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      render: (_, record) => (
+        <div
+          style={{
+            width: '72px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '8px',
+            justifyItems: 'center', // Căn giữa từng nút theo chiều ngang
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            color='default'
+            variant='filled'
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/admin/category/${record.uuid}`)}
+          />
+          <Button
+            color='primary'
+            variant='filled'
+            icon={<EditOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(record);
+            }}
+          />
+          <Button
+            color='danger'
+            variant='filled'
+            icon={<DeleteOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(record);
+            }}
+          />
+        </div>
+      ),
+      width: 100,
+      align: 'center',
+    },
+  ];
+
   return (
-    <div className="product-list">
-      <table>
-        <thead>
-          <tr className='head'>
-            <th className='id-row' onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
-            <th onClick={() => handleSort('title')}>Tên danh mục {getSortIcon('title')}</th>
-            <th onClick={() => handleSort('description')}>Mô tả {getSortIcon('description')}</th>
-            <th className='action-row'>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedCategories.length > 0 ? (
-            sortedCategories.map(category => (
-              <tr className='item-row' key={category.uuid} onClick={() => navigate(`/admin/category/${category.uuid}`)}>
-                <td>{category.uuid}</td>
-                <td>
-                  <div className='product'>
-                    {category.title}
-                  </div>
-                </td>
-                <td>{category.description}</td>
-                <td className="actions">
-                  <div>
-                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(category)}}>
-                      <i className="fas fa-edit"></i>
-                    </button>
-                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(category)}}>
-                      <i className="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" className="no-data">Không có sản phẩm nào</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <Table
+      rowKey="uuid"
+      dataSource={categories}
+      columns={columns}
+      pagination={true}
+      onChange={handleTableChange}
+      onRow={(record) => ({
+        onClick: () => navigate(`/admin/category/${record.uuid}`),
+        style: { cursor: 'pointer' },
+      })}
+      locale={{ emptyText: 'Không có danh mục nào' }}
+    />
   );
 };
 
-export default CategoryList; 
+export default CategoryList;

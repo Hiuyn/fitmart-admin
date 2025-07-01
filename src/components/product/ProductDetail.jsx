@@ -1,310 +1,168 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import ProductForm from './ProductForm';
-import ProductList from './ProductList';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Button, Card, Col, Row, Table, Tag, notification } from "antd";
+import ProductForm from "./ProductForm";
 
 const ProductDetail = () => {
-  const { id } = useParams(); // gets the ":id" from the URL
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
+  const { id } = useParams();
   const [product, setProduct] = useState({});
-  const [productOptions, setProductOptions] = useState({});
-  const [productVariants, setProductVariants] = useState({});
+  const [productOptions, setProductOptions] = useState([]);
+  const [productVariants, setProductVariants] = useState([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-      fetchUsers(); // Your API expects 1-based page numbers
-    }, []);
-    const [ready, setReady] = useState(false);
-    const fetchUsers = async () => {
-      const token = localStorage.getItem('token');
+    if (id) fetchProductData();
+  }, [id]);
 
-      const responseDetail = await fetch(`http://localhost:8080/api/v1/products/${id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  const fetchProductData = async () => {
+    try {
+      setLoading(true);
+      const [detailRes, optionsRes, variantsRes] = await Promise.all([
+        fetch(`http://localhost:8080/api/v1/products/${id}`, { headers: getHeaders() }),
+        fetch(`http://localhost:8080/api/v1/products/${id}/options`, { headers: getHeaders() }),
+        fetch(`http://localhost:8080/api/v1/products/${id}/variants`, { headers: getHeaders() }),
+      ]);
 
-      const responseOptionDetail = await fetch(`http://localhost:8080/api/v1/products/${id}/options`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const detailData = await detailRes.json();
+      const optionsData = await optionsRes.json();
+      const variantsData = await variantsRes.json();
 
-      const responseVariantDetail = await fetch(`http://localhost:8080/api/v1/products/${id}/variants`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-  
-      const data = await responseDetail.json();
-      const dataOptions = await responseOptionDetail.json();
-      const dataVariants = await responseVariantDetail.json();
-
-      console.log(dataOptions.data.data)
-      console.log(dataVariants.data.data)
-  
-      setProduct(data.data)
-      setProductOptions(dataOptions.data.data)
-      setProductVariants(dataVariants.data.data)
-
-      setReady(true);
-    };
-  
-  const handleEdit = () => {
-    setIsFormOpen(true);
-  };
-
-  const sampleProduct = {
-    product: {
-        uuid: "prod123",
-        title: "Hoddie",
-        slug: "hoddie",
-        description: "Comfortable cotton hoddie",
-        thumbnail: "hoddie.jpg",
-        status: "active",
-        type: "physical",
-        category_id: "cat123",
-        collection_id: "col123",
-        metadata: {
-            color: "blue"
-        }
-    },
-    options: {
-        created: [
-            {
-                title: "size",
-                values: [
-                    "S",
-                    "M"
-                ]
-            },
-            {
-                title: "color",
-                values: [
-                    "Red",
-                    "Blue"
-                ]
-            }
-        ],
-        updated: [],
-        deleted: []
-    },
-    variants: {
-        created: [
-            {
-                title: "Small Blue Hoddie",
-                sku: "HODDIE-SM-BLUE",
-                barcode: "123456789",
-                weight: 200,
-                height: 0,
-                width: 0,
-                length: 0,
-                inventory_quantity: 50,
-                options: {
-                    size: "s",
-                    color: "blue"
-                },
-                prices: [
-                    {
-                        title: "",
-                        amount: 0
-                    }
-                ]
-            },
-            {
-                title: "Large Blue Hoddie",
-                sku: "HODDIE-LG-BLUE",
-                barcode: "987654321",
-                weight: 220,
-                height: 0,
-                width: 0,
-                length: 0,
-                inventory_quantity: 30,
-                options: {
-                    size: "l",
-                    color: "blue"
-                },
-                prices: [
-                    {
-                        title: "",
-                        amount: 0
-                    }
-                ]
-            },
-            {
-                title: "Small Red Hoddie",
-                sku: "HODDIE-SM-RED",
-                barcode: "123456798",
-                weight: 200,
-                height: 0,
-                width: 0,
-                length: 0,
-                inventory_quantity: 50,
-                options: {
-                    size: "s",
-                    color: "red"
-                },
-                prices: [
-                    {
-                        title: "",
-                        amount: 0
-                    }
-                ]
-            },
-            {
-                title: "Large Red Hoddie",
-                sku: "HODDIE-LG-RED",
-                barcode: "987654312",
-                weight: 220,
-                height: 0,
-                width: 0,
-                length: 0,
-                inventory_quantity: 30,
-                options: {
-                    size: "l",
-                    color: "red"
-                },
-                prices: [
-                    {
-                        title: "",
-                        amount: 0
-                    }
-                ]
-            }
-        ],
-        updated: [],
-        deleted: []
+      setProduct(detailData.data);
+      setProductOptions(optionsData.data.data);
+      setProductVariants(variantsData.data.data);
+    } catch (error) {
+      console.error(error);
+      notification.error({ message: "Lỗi khi tải dữ liệu sản phẩm" });
+    } finally {
+      setLoading(false);
     }
-};
-
-
-  const handleSave = (order) => {
-    setIsFormOpen(false);
   };
-  
 
-  if (!ready) {
-    return <div>Loading...</div>;
-  }
+  const getHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  });
+
+  const handleDelete = () => {
+    fetch(`http://localhost:8080/api/v1/products/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    })
+      .then((res) => res.json())
+      .then(({ code, message }) => {
+        if (code === 200) {
+          notification.success({ message: "Xoá sản phẩm thành công" });
+        } else {
+          notification.error({ message });
+        }
+      })
+      .catch(() => notification.error({ message: "Lỗi kết nối server" }));
+  };
+
+  const optionColumns = [
+    { title: "Tên lựa chọn", dataIndex: "title", key: "title" },
+    {
+      title: "Giá trị",
+      dataIndex: "values",
+      key: "values",
+      render: (values) => {values.join(", ")},
+    },
+  ];
+
+  const variantColumns = [
+    { title: "Tên biến thể", dataIndex: "title", key: "title" },
+    { title: "SKU", dataIndex: "sku", key: "sku" },
+    { title: "Barcode", dataIndex: "barcode", key: "barcode" },
+    {
+      title: "Trọng lượng",
+      dataIndex: "weight",
+      key: "weight",
+      render: (w) => `${w}g`,
+    },
+    {
+      title: "Kích thước (D x R x C)",
+      key: "dimensions",
+      render: (_, record) =>
+        `${record.length || 0} x ${record.width || 0} x ${record.height || 0} cm`,
+    },
+    {
+      title: "Giá",
+      dataIndex: "price",
+      key: "price",
+      render: (p) => (p !== null ? `${p.toLocaleString()}₫` : "0₫"),
+    },
+    {
+      title: "Lựa chọn",
+      dataIndex: "options",
+      key: "options",
+      render: (opts) =>
+        opts?.length > 0
+          ? opts.map((o, idx) => (
+              <Tag color="blue" key={idx}>{o.value}</Tag>
+            ))
+          : null,
+    },
+  ];
+
+  if (loading) return <div>Đang tải dữ liệu...</div>;
 
   return (
     <div className="dashboard">
-      <div>
-        <h1>Chi tiết sản phẩm: </h1>
-      
-        <div className='detail-actions'>
-          <button className="detail-edit-button" onClick={(e) => {e.stopPropagation(); handleEdit()}} style={{display: 'flex', gap: '.5rem', paddingRight: '30px', paddingLeft: '30px'}}>
-            <i className="fas fa-edit"></i>
-            <div>Sửa</div>
-          </button>
-          <button className="detail-delete-button" onClick={(e) => {e.stopPropagation();}} style={{display: 'flex', gap: '.5rem', paddingRight: '30px', paddingLeft: '30px'}}>
-            <i className="fas fa-trash"></i>
-            <div>Xoá</div>
-          </button>
-        </div>
-      </div>
+      <Row align="middle" style={{ marginBottom: 20 }}>
+        <Col span={12}>
+          <h1>Chi tiết sản phẩm</h1>
+        </Col>
+        <Col span={12} style={{ textAlign: "end" }}>
+          <Button type="primary" onClick={() => setIsFormOpen(true)} style={{ marginRight: 10 }}>
+            <i className="fas fa-edit"></i> Sửa
+          </Button>
+          <Button danger onClick={handleDelete}>
+            <i className="fas fa-trash"></i> Xoá
+          </Button>
+        </Col>
+      </Row>
 
-      <div className="product-list" style={{marginBottom: '40px'}}>
-        <h2 style={{padding: '20px', backgroundColor: '#D3D3D3'}}>Thông tin sản phẩm</h2>
+      <Card title="Thông tin sản phẩm" style={{ marginBottom: 20 }}>
+        <Row gutter={[16, 8]}>
+          <Col span={8}><b>ID:</b> {product.uuid}</Col>
+          <Col span={8}><b>Tiêu đề:</b> {product.title}</Col>
+          <Col span={8}><b>Slug:</b> {product.slug}</Col>
+          <Col span={8}><b>Trạng thái:</b> <Tag color="blue">{product.status}</Tag></Col>
+          <Col span={8}><b>Loại:</b> {product.type}</Col>
+          <Col span={24}><b>Miêu tả:</b> {product.description}</Col>
+        </Row>
+      </Card>
 
-        <table className='detail-table'>
-          <tbody>
-            <tr className='head'>
-              <th className='id-row' style={{width: '140px'}}>ID Sản phẩm</th>
-              <td>{product["uuid"]}</td>
-            </tr>
-            <tr>
-              <th>Tiêu đề</th>
-              <td>{product["title"]}</td>
-            </tr>
-            <tr>
-              <th>Slug</th>
-              <td>{product["slug"]}</td>
-            </tr>
-            <tr>
-              <th>Miêu tả</th>
-              <td>{product["description"]}</td>
-            </tr>
-            <tr>
-              <th>Trạng thái</th>
-              <td>{product["status"]}</td>
-            </tr>
-            <tr>
-              <th>Loại</th>
-              <td>{product["type"]}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <Card title="Lựa chọn sản phẩm" style={{ marginBottom: 20 }}>
+        <Table
+          dataSource={productOptions.map((o, idx) => ({ key: o.uuid || idx, ...o }))}
+          columns={optionColumns}
+          pagination={false}
+        />
+      </Card>
 
-      <div className="product-list" style={{marginBottom: '40px'}}>
-        <h2 style={{padding: '20px', backgroundColor: '#D3D3D3'}}>Lựa chọn</h2>
-
-        <table border="1" cellPadding="10" style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr>
-              <th>Option Type</th>
-              <th>Values</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productOptions.map(option => (
-              <tr key={option.uuid}>
-                <td>{option.title}</td>
-                <td>{option.values.join(', ')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="product-list">
-        <h2 style={{padding: '20px', backgroundColor: '#D3D3D3'}}>Biến thể khác nhau</h2>
-
-        <table border="1" cellPadding="10" style={{ borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>SKU</th>
-              <th>Barcode</th>
-              <th>Weight</th>
-              <th>Price</th>
-              <th>Options</th>
-            </tr>
-          </thead>
-          <tbody>
-            {productVariants.map(variant => (
-              <tr key={variant.uuid}>
-                <td>{variant.title}</td>
-                <td>{variant.sku}</td>
-                <td>{variant.barcode}</td>
-                <td>{variant.weight}g</td>
-                <td>{variant.price !== null ? `${variant.price.toLocaleString()}₫` : 'N/A'}</td>
-                <td>
-                  {variant.options.length > 0
-                    ? variant.options.map(opt => opt.value).join(', ')
-                    : 'None'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card title="Danh sách biến thể">
+        <Table
+          dataSource={productVariants.map((v, idx) => ({ key: v.uuid || idx, ...v }))}
+          columns={variantColumns}
+          pagination={false}
+        />
+      </Card>
 
       {isFormOpen && (
-        <ProductForm 
-          product={sampleProduct} 
-          onSave={handleSave} 
-          onCancel={() => setIsFormOpen(false)} 
+        <ProductForm
+          product={product}
+          onSave={() => {
+            setIsFormOpen(false);
+            fetchProductData();
+          }}
+          onCancel={() => setIsFormOpen(false)}
         />
       )}
     </div>
   );
 };
 
-export default ProductDetail; 
+export default ProductDetail;

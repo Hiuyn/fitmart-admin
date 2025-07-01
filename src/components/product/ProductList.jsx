@@ -1,106 +1,122 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Table, Button, Space, Avatar, Tooltip, Tag } from 'antd';
+import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
 const ProductList = ({ products, onEdit, onDelete }) => {
-  const [sortField, setSortField] = useState('id');
-  const [sortDirection, setSortDirection] = useState('asc');
-
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { 
-      style: 'currency', 
-      currency: 'VND' 
-    }).format(price);
-  };
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const sortedProducts = [...products].sort((a, b) => {
-    if (sortField === 'price' || sortField === 'stock' || sortField === 'id') {
-      return sortDirection === 'asc' 
-        ? a[sortField] - b[sortField]
-        : b[sortField] - a[sortField];
-    } else {
-      const aValue = typeof a[sortField] === 'string' ? a[sortField] : String(a[sortField]);
-      const bValue = typeof b[sortField] === 'string' ? b[sortField] : String(b[sortField]);
-      
-      return sortDirection === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-  });
-
-  const getSortIcon = (field) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? '▲' : '▼';
-  };
-
   const navigate = useNavigate();
+
+  const formatPrice = (price) =>
+    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price ?? 0);
+
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'uuid',
+      key: 'uuid',
+      sorter: (a, b) => a.uuid.localeCompare(b.uuid),
+    },
+    {
+      title: 'Hình ảnh',
+      dataIndex: 'thumbnail',
+      key: 'thumbnail',
+      render: (thumbnail, record) => {
+        const fallbackImg =
+          'https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/512x512/plain/object_cube.png';
+        console.log(thumbnail)
+        return (
+          <Avatar
+            shape="square"
+            size={64}
+            src={thumbnail || fallbackImg}
+            alt={record.title}
+          />
+        );
+      },
+    },
+    {
+      title: 'Tên sản phẩm',
+      dataIndex: 'title',
+      key: 'title',
+      sorter: (a, b) => a.title.localeCompare(b.title),
+    },
+    {
+      title: 'Danh mục',
+      dataIndex: 'category',
+      key: 'category',
+      sorter: (a, b) => (a.category || '').localeCompare(b.category || ''),
+    },
+    {
+      title: 'Giá',
+      dataIndex: 'price',
+      key: 'price',
+      sorter: (a, b) => a.price - b.price,
+      render: (price) => formatPrice(price),
+    },
+    {
+      title: 'Tồn kho',
+      dataIndex: 'stock',
+      key: 'stock',
+      sorter: (a, b) => a.stock - b.stock,
+    },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      render: (_, record) => (
+        <div
+          style={{
+            width: '72px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '8px',
+            justifyItems: 'center', // Căn giữa từng nút theo chiều ngang
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            color='default'
+            variant='filled'
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/admin/product/${record.uuid}`)}
+          />
+          <Button
+            color='primary'
+            variant='filled'
+            icon={<EditOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(record);
+            }}
+          />
+          <Button
+            color='danger'
+            variant='filled'
+            icon={<DeleteOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(record);
+            }}
+          />
+        </div>
+      ),
+      width: 100,
+      align: 'center',
+    },
+  ];
+
   return (
-    <div className="product-list">
-      <table>
-        <thead>
-          <tr>
-            <th className='id-row' style={{width: '120px'}} onClick={() => handleSort('id')}>ID {getSortIcon('id')}</th>
-            <th className='image-row'>Hình ảnh</th>
-            <th onClick={() => handleSort('name')}>Tên sản phẩm {getSortIcon('name')}</th>
-            <th onClick={() => handleSort('category')}>Danh mục {getSortIcon('category')}</th>
-            <th onClick={() => handleSort('price')}>Giá {getSortIcon('price')}</th>
-            <th onClick={() => handleSort('stock')}>Tồn kho {getSortIcon('stock')}</th>
-            <th className='action-row'>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedProducts.length > 0 ? (
-            sortedProducts.map(product => (
-              <tr className='item-row' key={product.id} onClick={() => navigate(`/admin/products/${product.uuid}`)}>
-                <td>{product.uuid}</td>
-                <td>
-                  <img
-                    src={product.thumbnail} 
-                    alt={product.title} 
-                    className="product-thumbnail"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/512x512/plain/object_cube.png';
-                    }}
-                  />
-                </td>
-                <td>
-                  <div className='product'>
-                    {product.title}
-                  </div>
-                </td>
-                <td>{product.category}</td>
-                <td>{formatPrice(product.price)}</td>
-                <td>{product.stock}</td>
-                <td className="actions">
-                  <div>
-                    <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(product)}}>
-                      <i className="fas fa-edit"></i>
-                    </button>
-                    <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(product)}}>
-                      <i className="fas fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7" className="no-data">Không có sản phẩm nào</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <Table
+      rowKey="uuid"
+      dataSource={products}
+      columns={columns}
+      pagination={{ pageSize: 10 }}
+      onRow={(record) => ({
+        onClick: () => navigate(`/admin/products/${record.uuid}`),
+        style: { cursor: 'pointer' },
+      })}
+      locale={{ emptyText: 'Không có sản phẩm nào' }}
+    />
   );
 };
 
-export default ProductList; 
+export default ProductList;

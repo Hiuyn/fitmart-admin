@@ -14,16 +14,16 @@ const Users = () => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const token = localStorage.getItem('token');
 
 
   useEffect(() => {
-    fetchUsers(); // Your API expects 1-based page numbers
-  }, []);
+    fetchUsers(searchTerm); // Your API expects 1-based page numbers
+  }, [searchTerm]);
   const [ready, setReady] = useState(false);
-  const fetchUsers = async () => {
-    const token = localStorage.getItem('token');
+  const fetchUsers = async (searchTerm) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/users?created_at=-1&limit=25&q=&type=`, {
+      const response = await fetch(`http://localhost:8080/api/v1/users?created_at=-1&limit=25&q=${searchTerm}&type=`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -89,7 +89,7 @@ const Users = () => {
       }).then(res => {
         return res.json()
       }).then(data => {
-        if (data.cide === 200) {
+        if (data.code === 200) {
           notification.success({ message: 'Xoá thành công' })
         } else {
           notification.error({ message: data.message })
@@ -123,6 +123,8 @@ const Users = () => {
       .then(data => {
         if (data.code === 200) {
           notification.success({ message: 'Cập nhật thành công' })
+          setIsFormOpen(false);
+          setEditing(null);
         } else {
           notification.error({ message: data.message })
         }
@@ -134,24 +136,33 @@ const Users = () => {
       console.log(user)
       
       try {
-        const res = await fetch('http://localhost:8080/api/v1/users', {
+        fetch('http://localhost:8080/api/v1/users', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(user),
+        }).then(res => {
+          return res.json()
+        }).then(data => {
+          if (data.code === 200) {
+            notification.success({ message: 'Tạo thành công' })
+            setIsFormOpen(false);
+            setEditing(null);
+          } else {
+            notification.error({ message: data.message })
+          }
+        }).catch(err => console.log(err))
+        .finally(() => {
+          reloadData(token)
         });
+        // alert("User Created")
 
-        alert("User Created")
-
-        reloadData(token)
       } catch (error) {
         console.error('Error posting data:', error);
       }
     }
-    setIsFormOpen(false);
-    setEditing(null);
   };
 
   if (!ready) {

@@ -1,3 +1,4 @@
+import { Tag } from 'antd';
 import React, { useEffect, useState } from 'react';
 // import ReactPaginate from 'react-paginate';
 import { useNavigate } from 'react-router-dom';
@@ -47,6 +48,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
             <th onClick={() => handleSort('name')}>Họ tên {getSortIcon('name')}</th>
             <th onClick={() => handleSort('email')}>Email {getSortIcon('email')}</th>
             <th className='role-row' onClick={() => handleSort('role')}>Vai trò {getSortIcon('role')}</th>
+            <th className='role-row'>Quyền {getSortIcon('role')}</th>
             {/* <th className='status-row' onClick={() => handleSort('status')}>Trạng thái {getSortIcon('status')}</th> */}
             <th className='action-row'>Thao tác</th>
           </tr>
@@ -80,6 +82,13 @@ const UserList = ({ users, onEdit, onDelete }) => {
                     <span className={`role-badge ${user.role.toLowerCase()}`}>
                       {user.role}
                     </span> 
+                  </div>
+                </td>
+                <td className='permissions'>
+                  <div>
+                    {user.permissions.map(per => (
+                      <Tag color="blue">{per}</Tag>
+                    ))}
                   </div>
                 </td>
                 {/* <td className='status'>

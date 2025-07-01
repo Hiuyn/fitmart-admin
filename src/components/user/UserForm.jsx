@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import UploadImage from '../common/UploadImage';
-import {notification} from 'antd'
+import {notification, Select} from 'antd'
 
 const UserForm = ({ user, onSave, onCancel }) => {
+  const token = localStorage.getItem('token');
 
   const [formData, setFormData] = useState({
     user_name: '',
@@ -15,6 +16,30 @@ const UserForm = ({ user, onSave, onCancel }) => {
   });
   const [image, setImage] = useState([])
   const [errors, setErrors] = useState({});
+  const [permissions, setPermissions] = useState([]);
+
+  const fetchPermission = async () => {
+    fetch('http://localhost:8080/api/v1/permissions?created_at=-1&limit=25&q=&type=', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    }).then(res => res.json())
+    .then(data => {
+      if (data.code === 200) {
+          const newOptions = data.data.data.map(per => ({
+            label: per.name,
+            value: per.name,
+          }));
+          setPermissions(newOptions);
+      }
+    })
+    .catch(err => console.log('ERROR: ', err))
+  }
+
+  useEffect(() => {
+    fetchPermission()
+  }, [])
 
   useEffect(() => {
     if (user) {
@@ -24,6 +49,7 @@ const UserForm = ({ user, onSave, onCancel }) => {
         email: user.email,
         role: user.role,
         avatar_url: user.avatar_url || '',
+        permissions: user.permissions,
         password: user.password,
       });
     }
@@ -35,6 +61,13 @@ const UserForm = ({ user, onSave, onCancel }) => {
     setFormData({
       ...formData,
       [name]: value
+    });
+  };
+
+  const handleChangeSelect = value => {
+    setFormData({
+      ...formData,
+      permissions: value
     });
   };
 
@@ -63,7 +96,7 @@ const UserForm = ({ user, onSave, onCancel }) => {
     e.preventDefault();
     
     if (validateForm()) {
-      if (image.length) {
+      if (image[0]?.file) {
         const formDataImage = new FormData()
         formDataImage.append('file', image[0]?.file)
 
@@ -149,6 +182,32 @@ const UserForm = ({ user, onSave, onCancel }) => {
                 <option key={role} value={role}>{role}</option>
               ))}
             </select>
+            {errors.role && <div className="error-message">{errors.role}</div>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="permissions">Quyền:</label>
+            <Select
+              mode="multiple"
+              allowClear
+              style={{ width: '100%' }}
+              placeholder="Chọn quyền"
+              onChange={handleChangeSelect}
+              options={permissions}
+              value={formData.permissions}
+            />
+            {/* <select
+              id="permissions"
+              name="permissions"
+              value={formData.permissions}
+              onChange={handleChange}
+              className={errors.role ? 'error' : ''}
+              multiple
+            >
+              {permissions.map(permission => (
+                <option key={permission.id} value={permission.name}>{permission.name}</option>
+              ))}
+            </select> */}
             {errors.role && <div className="error-message">{errors.role}</div>}
           </div>
           

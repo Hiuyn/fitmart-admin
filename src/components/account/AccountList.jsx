@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { EyeOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
+
 
 const AccountList = ({ accounts, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
@@ -57,14 +60,14 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
         <tbody>
           {sortedAccounts.length > 0 ? (
             sortedAccounts.map(account => (
-              <tr className='item-row' key={account.id} onClick={() => navigate(`/admin/accounts/${account.uuid}`)}>
+              <tr className='item-row' key={account.id}>
                 <td>{account.uuid}</td>
                 <td>
                   {account.avatar_url ? (
                     <img 
                       src={account.avatar_url} 
                       alt={account.name} 
-                      className="account-avatar"
+                      className="user-avatar"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.parentNode.innerHTML = '<div class="avatar-placeholder"><i class="fas fa-question"></i></div>';
@@ -79,13 +82,17 @@ const AccountList = ({ accounts, onEdit, onDelete }) => {
                 <td>{account.user_name}</td>
                 <td>{account.email}</td>
                 <td className="actions">
-                  <div>
+                  <div style={{display: 'grid', gap: '10px', gridTemplateColumns: "auto auto"}}>
                     <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(account)}}>
                       <i className="fas fa-edit"></i>
                     </button>
                     <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(account)}}>
                       <i className="fas fa-trash"></i>
                     </button>
+                    <Button color="pink" onClick={() => navigate(`/admin/accounts/${account.uuid}`)}  icon={<EyeOutlined /> } />
+                    {/* <button className="show-button" >
+                      <i className="fas fa-show"></i>
+                    </button> */}
                   </div>
                 </td>
               </tr>

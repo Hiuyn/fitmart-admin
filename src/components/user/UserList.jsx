@@ -2,6 +2,8 @@ import { Tag } from 'antd';
 import React, { useEffect, useState } from 'react';
 // import ReactPaginate from 'react-paginate';
 import { useNavigate } from 'react-router-dom';
+import { EyeOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 
 const UserList = ({ users, onEdit, onDelete }) => {
   const [sortField, setSortField] = useState('id');
@@ -56,7 +58,7 @@ const UserList = ({ users, onEdit, onDelete }) => {
         <tbody>
           {sortedUsers.length > 0 ? (
             sortedUsers.map(user => (
-                <tr className='item-row' key={user.uuid} onClick={() => navigate(`/admin/users/${user.uuid}`)}>
+                <tr className='item-row' key={user.uuid}>
                 <td>{user.uuid}</td>
                 <td>
                   {user.avatar_url ? (
@@ -99,13 +101,14 @@ const UserList = ({ users, onEdit, onDelete }) => {
                   </div>
                 </td> */}
                 <td className="actions">
-                  <div>
+                  <div style={{display: 'grid', gap: '10px', gridTemplateColumns: "auto auto"}}>
                     <button className="edit-button" onClick={(e) => {e.stopPropagation(); onEdit(user)}}>
                       <i className="fas fa-edit"></i>
                     </button>
                     <button className="delete-button" onClick={(e) => {e.stopPropagation(); onDelete(user)}}>
                       <i className="fas fa-trash"></i>
                     </button>
+                    <Button color="pink" onClick={() => navigate(`/admin/users/${user.uuid}`)}  icon={<EyeOutlined /> } />
                   </div>
                 </td>
               </tr>

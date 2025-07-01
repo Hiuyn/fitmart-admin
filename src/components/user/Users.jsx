@@ -133,8 +133,6 @@ const Users = () => {
         reloadData(token)
       })
     } else {
-      console.log(user)
-      
       try {
         fetch('http://localhost:8080/api/v1/users', {
           method: 'POST',

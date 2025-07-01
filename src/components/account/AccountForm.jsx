@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import UploadImage from '../common/UploadImage';
+import { notification } from 'antd';
 
 const AccountForm = ({ account, onSave, onCancel }) => {
 
@@ -6,14 +8,13 @@ const AccountForm = ({ account, onSave, onCancel }) => {
     user_name: '',
     email: '',
     avatar_url: '',
-    permissions: [],
     metadata: {},
     password: '',
     address: "",
     phone: "",
   });
 
-
+const [image, setImage] = useState([])
 
   const [errors, setErrors] = useState({});
 
@@ -60,9 +61,27 @@ const AccountForm = ({ account, onSave, onCancel }) => {
 
     
     if (validateForm()) {
-          console.log('asd')
+      if (image[0]?.file) {
+        const formDataImage = new FormData()
+        formDataImage.append('file', image[0]?.file)
 
-      onSave(formData);
+        fetch(`http://localhost:8080/api/v1/uploads`, {
+          method: 'POST',
+          body: formDataImage,
+        }).then(response => {
+          return response.json(); // Phải gọi để lấy body JSON thực tế
+        })
+        .then(data => {
+          if (data.code === 200) {
+            onSave({...formData, avatar_url: data.data})
+            notification.success({ message: 'Cập nhật thành công' })
+          } else {
+            notification.error({ message: data.message })
+          }
+        }).catch(err => notification.error({ message: err.message }))
+      } else {
+        onSave(formData)
+      }
     }
   };
 
@@ -137,16 +156,19 @@ const AccountForm = ({ account, onSave, onCancel }) => {
           
           <div className="form-group">
             <label htmlFor="avatar_url">URL ảnh đại diện:</label>
-            <input
+            {/* <input
               type="text"
               id="avatar_url"
               name="avatar_url"
               value={formData.avatar_url}
               onChange={handleChange}
-            />
+            /> */}
+            <UploadImage value={formData.avatar_url} setImage={(file) => {
+              setImage(file)
+            }}/>
           </div>
 
-          {formData.avatar_url ? (
+          {/* {formData.avatar_url ? (
             <div className="image-preview">
               <img 
                 src={formData.avatar_url} 
@@ -163,7 +185,7 @@ const AccountForm = ({ account, onSave, onCancel }) => {
                 <i className="fas fa-question"></i>
               </div>
             </div>
-          )}
+          )} */}
           
           <div className="form-actions">
             <button type="button" className="cancel-button" onClick={onCancel}>

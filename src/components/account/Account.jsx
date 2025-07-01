@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AccountList from './AccountList';
 import AccountForm from './AccountForm';
 import DeleteConfirmation from '../../components/DeleteConfirmation';
+import { notification } from 'antd';
 
 const Account = () => {
   // Dữ liệu mẫu
@@ -91,24 +92,33 @@ const Account = () => {
     if (editing) {
 
       try {
-        const res = await fetch(`http://localhost:8080/api/v1/accounts/${account.uuid}`, {
+        let temp = {...account, password: account.password ?? ""}
+        fetch(`http://localhost:8080/api/v1/accounts/${temp.uuid}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(account),
-        });
-
-        alert("Account Updated")
-
-        reloadData(token)
+          body: JSON.stringify(temp),
+        }).then(response => {
+          return response.json(); // Phải gọi để lấy body JSON thực tế
+        })
+        .then(data => {
+          if (data.code === 200) {
+            notification.success({ message: 'Cập nhật thành công' })
+            setIsFormOpen(false);
+            setEditing(null);
+          } else {
+            notification.error({ message: data.message })
+          }
+        }).catch(err => notification.error({ message: err.message }))
+        .finally(() => {
+          reloadData(token)
+        })
       } catch (error) {
         console.error('Error posting data:', error);
       }
     } else {
-      console.log(account)
-      
       try {
         const res = await fetch('http://localhost:8080/api/v1/accounts', {
           method: 'POST',
@@ -117,17 +127,26 @@ const Account = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(account),
+        }).then(res => {
+          return res.json()
+        }).then(data => {
+          if (data.code === 200) {
+            notification.success({ message: 'Tạo thành công' })
+            setIsFormOpen(false);
+            setEditing(null);
+          } else {
+            notification.error({ message: data.message })
+          }
+        }).catch(err => console.log(err))
+        .finally(() => {
+          reloadData(token)
         });
-
-        alert("Account Created")
-
-        reloadData(token)
       } catch (error) {
         console.error('Error posting data:', error);
       }
     }
-    setIsFormOpen(false);
-    setEditing(null);
+    // setIsFormOpen(false);
+    // setEditing(null);
   };
 
     const reloadData = async (token) => {

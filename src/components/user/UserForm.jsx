@@ -63,27 +63,31 @@ const UserForm = ({ user, onSave, onCancel }) => {
     e.preventDefault();
     
     if (validateForm()) {
-      const formDataImage = new FormData()
-      formDataImage.append('file', image[0]?.file)
+      if (image.length) {
+        const formDataImage = new FormData()
+        formDataImage.append('file', image[0]?.file)
 
-      fetch(`http://localhost:8080/api/v1/uploads`, {
-        method: 'POST',
-        body: formDataImage,
-      }).then(response => {
-        return response.json(); // Phải gọi để lấy body JSON thực tế
-      })
-      .then(data => {
-        if (data.code === 200) {
-          onSave({...formData, avatar_url: data.data})
-          notification.success({ message: 'Cập nhật thành công' })
-        } else {
-          notification.error({ message: data.message })
-        }
-      }).catch(err => notification.error({ message: err.message }))
+        fetch(`http://localhost:8080/api/v1/uploads`, {
+          method: 'POST',
+          body: formDataImage,
+        }).then(response => {
+          return response.json(); // Phải gọi để lấy body JSON thực tế
+        })
+        .then(data => {
+          if (data.code === 200) {
+            onSave({...formData, avatar_url: data.data})
+            notification.success({ message: 'Cập nhật thành công' })
+          } else {
+            notification.error({ message: data.message })
+          }
+        }).catch(err => notification.error({ message: err.message }))
+      } else {
+        onSave(formData)
+      }
     }
   };
 
-  const roles = ['Admin', 'Nhân viên', 'Khách hàng'];
+  const roles = ['Nhân viên', 'Quản lý'];
   const statuses = ['Hoạt động', 'Bị khóa', 'Chờ xác nhận'];
 
   return (

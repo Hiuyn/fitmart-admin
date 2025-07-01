@@ -10,10 +10,11 @@ const Sidebar = ({ collapsed, setCollapsed, currentPage, setCurrentPage }) => {
     { id: 'accounts', name: 'Tài khoản', icon: 'fa-users' },
     { id: 'products', name: 'Sản phẩm', icon: 'fa-box' },
     { id: 'category', name: 'Danh mục', icon: 'fa-list ' },
-    // { id: 'settings', name: 'Cài đặt', icon: 'fa-cog' },
     { id: 'register', name: 'Đăng xuất', icon: 'fa-sign-out' },
   ];
-  
+
+  const user = JSON.parse(localStorage.getItem('user'));
+
   return (
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
@@ -22,9 +23,19 @@ const Sidebar = ({ collapsed, setCollapsed, currentPage, setCurrentPage }) => {
           {collapsed ? '>' : '<'}
         </button>
       </div>
+
       <div className="sidebar-menu">
         <ul>
           {menuItems.map(item => {
+            
+            // Ẩn users và accounts nếu không phải ADMIN
+            if (
+              (item.id === 'users' || item.id === 'accounts') &&
+              (!user?.data?.role || user.data.role !== 'ADMIN')
+            ) {
+              return null;
+            }
+
             const path = `/admin/${item.id === 'register' ? 'login' : item.id}`;
 
             return (
@@ -48,7 +59,5 @@ const Sidebar = ({ collapsed, setCollapsed, currentPage, setCurrentPage }) => {
     </div>
   );
 };
-
-
 
 export default Sidebar; 

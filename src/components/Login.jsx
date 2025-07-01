@@ -51,7 +51,7 @@ const Login = ({ setCurrentPage }) => {
       // Assuming your API returns a token
       const token = data.data.access_token;
       localStorage.setItem('token', token);
-      console.log(token)
+      localStorage.setItem('user', JSON.stringify(data.data));
 
       alert('Login successful!');
       setError('');

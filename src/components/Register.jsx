@@ -48,7 +48,6 @@ const Register = () => {
       // Assuming your API returns a token
       const token = data.token;
       localStorage.setItem('token', token);
-      console.log(token)
 
       alert('Login successful!');
       setError('');

@@ -23,7 +23,6 @@ const ProductList = ({ products, onEdit, onDelete }) => {
       render: (thumbnail, record) => {
         const fallbackImg =
           'https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/512x512/plain/object_cube.png';
-        console.log(thumbnail)
         return (
           <Avatar
             shape="square"

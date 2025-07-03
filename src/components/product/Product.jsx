@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ProductList from './ProductList';
 import ProductForm from './ProductForm';
 import DeleteConfirmation from '../DeleteConfirmation';
+import { getAllProductOptions, getProductVariants } from '../../api/products';
 
 const Product = () => {
   // Dữ liệu mẫu
@@ -24,8 +25,6 @@ const Product = () => {
     const data = await response.json();
     const filteredData = data.data.data.filter(product => product.deleted_at === null)
 
-    console.log(filteredData)
-
     setProducts(filteredData)
     setReady(true);
   };
@@ -40,12 +39,13 @@ const Product = () => {
   // Lọc sản phẩm theo từ khóa tìm kiếm
   var filteredProducts = {}
 
-  console.log(products)
-  if (ready) {
-    filteredProducts = products.filter(product => 
-      product.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
+  // if (ready) {
+  //   filteredProducts = products.filter(product => 
+  //     { 
+  //      return product.title ? product.title.toLowerCase().includes(searchTerm.toLowerCase()) : []
+  //     }
+  //   );
+  // }
 
   const handleAddNew = () => {
     setEditing(null);
@@ -53,8 +53,17 @@ const Product = () => {
   };
 
   const handleEdit = (product) => {
-    setEditing(product);
-    setIsFormOpen(true);
+    let formData = {...product}
+    Promise.all([
+      getProductVariants(product.uuid, {}),
+      getAllProductOptions(product.uuid, {})
+    ]).then(([variantsRes, optionsRes]) => {
+      formData.variants = variantsRes.data.data;
+      formData.options = optionsRes.data.data;
+
+      setEditing(formData); // Đảm bảo setEditing sau khi có đủ dữ liệu
+      setIsFormOpen(true);
+    });
   };
 
   const handleDelete = (product) => {
@@ -81,6 +90,7 @@ const Product = () => {
     }
     setIsFormOpen(false);
     setEditing(null);
+    fetchUsers();
   };
 
   if (!ready) {
@@ -109,7 +119,7 @@ const Product = () => {
       </div>
 
       <ProductList 
-        products={filteredProducts} 
+        products={products} 
         onEdit={handleEdit} 
         onDelete={handleDelete} 
       />

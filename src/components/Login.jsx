@@ -13,7 +13,6 @@ const Login = ({ setCurrentPage }) => {
   
   useEffect(() => {
     localStorage.removeItem("token");
-    console.log('oa')
   }, []);
 
 

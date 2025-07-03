@@ -66,7 +66,7 @@ const OrderList = ({ orders, onEdit, onDelete }) => {
             icon={<EyeOutlined />}
             onClick={() => navigate(`/admin/order/${record.uuid}`)}
           />
-          <Button
+          {/* <Button
             color='primary'
             variant='filled'
             icon={<EditOutlined />}
@@ -83,7 +83,7 @@ const OrderList = ({ orders, onEdit, onDelete }) => {
               e.stopPropagation();
               onDelete(record);
             }}
-          />
+          /> */}
         </div>
       ),
     },

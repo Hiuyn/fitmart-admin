@@ -11,8 +11,6 @@ const LuaChonTabContent = ({ tabData, handleChange }) => {
   //   setTitle(value); 
   // }
 const options = [];
-  console.log(tabData)
-
   return (
     <div>
       <div className="form-group">
@@ -102,7 +100,6 @@ const OrderForm = ({ order, onSave, onCancel }) => {
   }, [order]);
 
   const handleChange = (e) => {
-    console.log(e.target.value)
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -112,12 +109,6 @@ const OrderForm = ({ order, onSave, onCancel }) => {
 
   const handleOptionChange = (e) => {
     const { name, value, id } = e.target;
-    console.log(name, value, id)
-    console.log(e.target)
-
-    console.log(typeof  id)
-
-    console.log(choiceList[id])
 
     const updatedData = choiceList.map(choice =>
       choice.key == id
@@ -130,8 +121,6 @@ const OrderForm = ({ order, onSave, onCancel }) => {
           }
         : choice
     );
-
-    console.log(updatedData)
 
     setChoiceList(updatedData)
   };
@@ -238,7 +227,6 @@ const OrderForm = ({ order, onSave, onCancel }) => {
         lastIndex = i - 1;
       }
     });
-    console.log(lastIndex)
 
     const filteredTabs = choiceList.filter((tab) => tab.key !== targetKey);
     if (filteredTabs.length && newActiveKey === targetKey) {
@@ -252,21 +240,18 @@ const OrderForm = ({ order, onSave, onCancel }) => {
       filteredTabs[i].tab = `Choice ${i + 1}`;
       filteredTabs[i].key = `${i + 1}`;
     }
-    console.log(filteredTabs)
     setChoiceList(filteredTabs);
 
     // const filteredChoice = choices.filter((choice) => choice.id !== targetKey);
     // for (let i = 0; i < filteredChoice.length; i++) {
     //   filteredChoice[i].id = i + 1;
     // }
-    // console.log(filteredChoice)
 
     // setChoices(filteredChoice);
 
     setActiveKey(newActiveKey);
   };
   const onEdit = (targetKey, action) => {
-    console.log(action);
     if (action === 'add') {
       add();
     } else {

@@ -61,8 +61,6 @@ const CategoryForm = ({ category, onSave, onCancel }) => {
 
     
     if (validateForm()) {
-          console.log('asd')
-
       onSave(formData);
     }
   };

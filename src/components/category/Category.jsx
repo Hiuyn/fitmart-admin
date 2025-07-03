@@ -52,8 +52,6 @@ const Category = () => {
     const data = await response.json();
     const filteredData = data.data.data.filter(product => product.deleted_at === null)
 
-    console.log(filteredData)
-
     setCategories(filteredData)
     setReady(true);
   };
@@ -99,8 +97,6 @@ const Category = () => {
           },
         });
 
-        console.log(res)
-
         alert("Category Deleted")
 
         setIsDeleteOpen(false);
@@ -137,8 +133,6 @@ const Category = () => {
         console.error('Error posting data:', error);
       }
     } else {
-      console.log(category)
-      
       try {
         const res = await fetch('http://localhost:8080/api/v1/product-categories', {
           method: 'POST',

@@ -141,10 +141,10 @@ const OrderDetail = () => {
           <h1>Chi tiết hàng đặt</h1>
         </Col>
         <Col span={12} style={{textAlign: 'end'}}>
-          <Button type="primary" onClick={() => setIsFormOpen(true)} style={{ marginRight: 10 }}>
+          {/* <Button type="primary" onClick={() => setIsFormOpen(true)} style={{ marginRight: 10 }}>
             <i className="fas fa-edit"></i> Sửa
           </Button>
-          <Button danger><i className="fas fa-trash"></i> Xoá</Button>
+          <Button danger><i className="fas fa-trash"></i> Xoá</Button> */}
         </Col>
       </Row>
 

@@ -70,8 +70,6 @@ const Account = () => {
           },
         });
 
-        console.log(res)
-
         alert("Account Deleted")
 
         setIsDeleteOpen(false);

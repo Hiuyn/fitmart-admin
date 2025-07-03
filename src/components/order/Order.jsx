@@ -75,8 +75,6 @@ const Order = () => {
     const data = await response.json();
     const filteredData = data.data.data.filter(product => product.deleted_at === null)
 
-    console.log(filteredData)
-
     setOrders(filteredData)
     setReady(true);
   };

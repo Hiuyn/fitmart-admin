@@ -1,12 +1,11 @@
 import axios from 'axios';
-console.log('API URL:', process.env.API_URL);
 axios.defaults.baseURL = process.env.API_URL || 'http://localhost:8080/api/v1';
 axios.defaults.timeout = 10000;
 axios.defaults.headers.post['Accept'] = 'application/json'
 
 axios.interceptors.request.use(config => {
-  const authen = localStorage.getItem('authen', {})
-  const token = authen ? JSON.parse(authen).access_token : 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBnbWFpbC5jb20iLCJpYXQiOjE3NTA5NDY2MDMsImV4cCI6MTc1MTAzMzAwM30.SRxh0yz_50-FDvBH4R8aeK5l0CrBi23V-CYy_cUnpkk';
+  const authen = localStorage.getItem('user', {})
+  const token = authen ? JSON.parse(authen).access_token : '';
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

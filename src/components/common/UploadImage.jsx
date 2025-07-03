@@ -29,7 +29,7 @@ const UploadImage = ({value, setImage}) => {
   };
   
   const beforeUpload = async file => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp';
     if (!isJpgOrPng) {
       notification.error('You can only upload JPG/PNG file!');
     }
@@ -54,7 +54,6 @@ const UploadImage = ({value, setImage}) => {
   };
 
   useEffect(() => {
-    console.log('useEffect: ', value)
     if (!value || typeof value !== 'string') {
       if (!value) {
         setImageUrl([])
@@ -92,7 +91,7 @@ const UploadImage = ({value, setImage}) => {
       listType="picture-card"
       showUploadList={false}
       fileList={imageUrl}
-      accept=".jpg, .jpeg, .png"
+      accept=".jpg, .jpeg, .png, .webp"
       beforeUpload={beforeUpload}
       onPreview={handlePreview}
     >

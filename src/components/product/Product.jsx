@@ -3,6 +3,13 @@ import ProductList from './ProductList';
 import ProductForm from './ProductForm';
 import DeleteConfirmation from '../DeleteConfirmation';
 import { getAllProductOptions, getProductVariants } from '../../api/products';
+import { notification } from 'antd';
+
+const token = localStorage.getItem('token');
+const getHeaders = () => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  });
 
 const Product = () => {
   // Dữ liệu mẫu
@@ -13,13 +20,9 @@ const Product = () => {
   }, []);
   const [ready, setReady] = useState(false);
   const fetchUsers = async () => {
-    const token = localStorage.getItem('token');
 
     const response = await fetch(`http://localhost:8080/api/v1/products`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getHeaders(),
     });
 
     const data = await response.json();
@@ -35,17 +38,6 @@ const Product = () => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Lọc sản phẩm theo từ khóa tìm kiếm
-  var filteredProducts = {}
-
-  // if (ready) {
-  //   filteredProducts = products.filter(product => 
-  //     { 
-  //      return product.title ? product.title.toLowerCase().includes(searchTerm.toLowerCase()) : []
-  //     }
-  //   );
-  // }
 
   const handleAddNew = () => {
     setEditing(null);
@@ -73,9 +65,44 @@ const Product = () => {
 
   const confirmDelete = () => {
     if (productToDelete) {
-      setProducts(products.filter(p => p.id !== productToDelete.id));
-      setIsDeleteOpen(false);
-      setProductToDelete(null);
+      // setProducts(products.filter(p => p.id !== productToDelete.id));
+      let payload = {
+      "options": {
+          "created": [],
+          "updated": [],
+          "deleted": productToDelete.options.map(item => item.uuid),
+      },
+      "variants": {
+          "created":[],
+          "updated": [],
+          "deleted": productToDelete.variants.map(item => item.uuid),
+      }
+    }
+
+    fetch(`http://localhost:8080/api/v1/products/${productToDelete.uuid}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.status === 204) {
+          return { code: 200, message: "Xoá sản phẩm thành công" }; // Tự mock lại
+        }
+        return res.json();
+      })
+      .then(({ code, message }) => {
+        if (code === 200) {
+          notification.success({ message: "Xoá sản phẩm thành công" });
+        } else {
+          notification.error({ message });
+        }
+      })
+      .catch(() => notification.error({ message: "Lỗi kết nối server" }))
+      .finally(() => {
+        setIsDeleteOpen(false);
+        setProductToDelete(null);
+        fetchUsers()
+      })
     }
   };
 

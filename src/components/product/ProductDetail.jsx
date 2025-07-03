@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Button, Card, Col, Row, Table, Tag, notification } from "antd";
+import { Avatar, Button, Card, Col, Row, Table, Tag, notification } from "antd";
 import ProductForm from "./ProductForm";
+import { render } from "@testing-library/react";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const [product, setProduct] = useState({});
-  const [productOptions, setProductOptions] = useState([]);
-  const [productVariants, setProductVariants] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
@@ -19,19 +18,13 @@ const ProductDetail = () => {
   const fetchProductData = async () => {
     try {
       setLoading(true);
-      const [detailRes, optionsRes, variantsRes] = await Promise.all([
+      const [detailRes] = await Promise.all([
         fetch(`http://localhost:8080/api/v1/products/${id}`, { headers: getHeaders() }),
-        fetch(`http://localhost:8080/api/v1/products/${id}/options`, { headers: getHeaders() }),
-        fetch(`http://localhost:8080/api/v1/products/${id}/variants`, { headers: getHeaders() }),
       ]);
 
       const detailData = await detailRes.json();
-      const optionsData = await optionsRes.json();
-      const variantsData = await variantsRes.json();
 
       setProduct(detailData.data);
-      setProductOptions(optionsData.data.data);
-      setProductVariants(variantsData.data.data);
     } catch (error) {
       console.error(error);
       notification.error({ message: "Lỗi khi tải dữ liệu sản phẩm" });
@@ -46,11 +39,29 @@ const ProductDetail = () => {
   });
 
   const handleDelete = () => {
+    let payload = {
+      "options": {
+          "created": [],
+          "updated": [],
+          "deleted": product.options.map(item => item.uuid),
+      },
+      "variants": {
+          "created":[],
+          "updated": [],
+          "deleted": product.variants.map(item => item.uuid),
+      }
+    }
     fetch(`http://localhost:8080/api/v1/products/${id}`, {
       method: "DELETE",
       headers: getHeaders(),
+      body: JSON.stringify(payload),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 204) {
+          return { code: 200, message: "Xoá sản phẩm thành công" }; // Tự mock lại
+        }
+        return res.json();
+      })
       .then(({ code, message }) => {
         if (code === 200) {
           notification.success({ message: "Xoá sản phẩm thành công" });
@@ -67,11 +78,20 @@ const ProductDetail = () => {
       title: "Giá trị",
       dataIndex: "values",
       key: "values",
-      render: (values) => {values.join(", ")},
+      render: (values) => (
+        values.map((val, idx) => (
+          <Tag key={idx} color="blue">{val}</Tag>
+        ))
+      ),
     },
   ];
 
   const variantColumns = [
+    { title: "", dataIndex: "image", key: "image",
+      render: (image) => (
+        <Avatar src={image} shape="square" size={128} />
+      )
+     },
     { title: "Tên biến thể", dataIndex: "title", key: "title" },
     { title: "SKU", dataIndex: "sku", key: "sku" },
     { title: "Barcode", dataIndex: "barcode", key: "barcode" },
@@ -86,6 +106,11 @@ const ProductDetail = () => {
       key: "dimensions",
       render: (_, record) =>
         `${record.length || 0} x ${record.width || 0} x ${record.height || 0} cm`,
+    },
+    {
+      title: "Tồn kho",
+      dataIndex: "inventory_quantity",
+      key: "inventory_quantity",
     },
     {
       title: "Giá",
@@ -137,7 +162,7 @@ const ProductDetail = () => {
 
       <Card title="Lựa chọn sản phẩm" style={{ marginBottom: 20 }}>
         <Table
-          dataSource={productOptions.map((o, idx) => ({ key: o.uuid || idx, ...o }))}
+          dataSource={product.options.map((o, idx) => ({ key: o.uuid || idx, ...o }))}
           columns={optionColumns}
           pagination={false}
         />
@@ -145,7 +170,7 @@ const ProductDetail = () => {
 
       <Card title="Danh sách biến thể">
         <Table
-          dataSource={productVariants.map((v, idx) => ({ key: v.uuid || idx, ...v }))}
+          dataSource={product.variants.map((v, idx) => ({ key: v.uuid || idx, ...v }))}
           columns={variantColumns}
           pagination={false}
         />
@@ -154,6 +179,7 @@ const ProductDetail = () => {
       {isFormOpen && (
         <ProductForm
           product={product}
+          isModalOpen={isFormOpen}
           onSave={() => {
             setIsFormOpen(false);
             fetchProductData();

@@ -1,13 +1,35 @@
-import React from 'react';
-import { Table, Button, Space, Avatar, Tooltip, Tag } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Space, Avatar, Tooltip, Tag, Badge } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { getAllProductCategory } from '../../api/product-categories';
+import { render } from '@testing-library/react';
 
 const ProductList = ({ products, onEdit, onDelete }) => {
   const navigate = useNavigate();
 
   const formatPrice = (price) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price ?? 0);
+
+  const [categories, setCategories] = useState([])
+  
+  useEffect(() => {
+      getAllProductCategory()
+        .then(response => {
+          if (response.code === 200) {
+            let data = response.data.data;
+            let categories = data.map(category => {
+              return {
+                value: category.uuid,
+                label: category.title
+              };
+            })
+            setCategories(categories);
+          }
+        }).catch(error => {
+          setCategories([]);
+        });
+    }, []);
 
   const columns = [
     {
@@ -41,23 +63,27 @@ const ProductList = ({ products, onEdit, onDelete }) => {
     },
     {
       title: 'Danh mục',
-      dataIndex: 'category',
-      key: 'category',
-      sorter: (a, b) => (a.category || '').localeCompare(b.category || ''),
+      dataIndex: 'category_id',
+      key: 'category_id',
+      render: (category_id) => (
+        categories.find(val => val.value === category_id)?.label ?? ""
+      )
     },
     {
-      title: 'Giá',
-      dataIndex: 'price',
-      key: 'price',
-      sorter: (a, b) => a.price - b.price,
-      render: (price) => formatPrice(price),
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+         status === 'active' ? <Badge status="success" text={status} />
+        : <Badge status="error" text={status} />
+      ),
     },
-    {
-      title: 'Tồn kho',
-      dataIndex: 'stock',
-      key: 'stock',
-      sorter: (a, b) => a.stock - b.stock,
-    },
+    // {
+    //   title: 'Tồn kho',
+    //   dataIndex: 'stock',
+    //   key: 'stock',
+    //   sorter: (a, b) => a.stock - b.stock,
+    // },
     {
       title: 'Thao tác',
       key: 'actions',

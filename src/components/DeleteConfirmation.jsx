@@ -2,7 +2,7 @@ import React from 'react';
 
 const DeleteConfirmation = ({ product, onConfirm, onCancel, message }) => {
   const defaultMessage = product ? 
-    `Bạn có chắc chắn muốn xóa sản phẩm "${product.name}"?` : 
+    `Bạn có chắc chắn muốn xóa sản phẩm "${product.title}"?` : 
     'Bạn có chắc chắn muốn xóa mục này?';
 
   return (

@@ -113,9 +113,7 @@ const Category = () => {
 
   const handleSave = async (category) => {
     const token = localStorage.getItem('token');
-
     if (editing) {
-      console.log('category: ', category)
       try {
         const res = await fetch(`http://localhost:8080/api/v1/product-categories/${category.uuid}`, {
           method: 'PUT',

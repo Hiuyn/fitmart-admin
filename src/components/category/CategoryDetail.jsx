@@ -29,12 +29,12 @@ const CategoryDetail = () => {
   };
 
   const fetchAllProducts = () => {
-    fetch(`http://localhost:8080/api/v1/products`, {
+    fetch(`http://localhost:8080/api/v1/products?limit=-1`, {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then(({ code, data }) => {
-        if (code === 200) setAllProducts(data.data.filter(item => item.category_id === id && item.category_id));
+        if (code === 200) setAllProducts(data.data.filter(item => item.category_id === id || !item.category_id));
       })
       .catch(console.error);
   };

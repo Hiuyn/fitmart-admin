@@ -74,9 +74,6 @@ const CategoryDetail = () => {
     const created = currentSelected.filter(id => !existing.includes(id));
     const deleted = existing.filter(id => !currentSelected.includes(id));
 
-    console.log("Created:", created);
-    console.log("Deleted:", deleted);
-
     if (created.length || deleted.length) {
       const payload = {
         created,

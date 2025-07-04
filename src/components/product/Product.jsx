@@ -15,13 +15,11 @@ const Product = () => {
   // Dữ liệu mẫu
   const sampleProducts = [];
 
-  useEffect(() => {
-    fetchUsers(); // Your API expects 1-based page numbers
-  }, []);
+
   const [ready, setReady] = useState(false);
   const fetchUsers = async () => {
 
-    const response = await fetch(`http://localhost:8080/api/v1/products`, {
+    const response = await fetch(`http://localhost:8080/api/v1/products?q=${searchTerm}`, {
       headers: getHeaders(),
     });
 
@@ -38,6 +36,10 @@ const Product = () => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchUsers(); // Your API expects 1-based page numbers
+  }, [searchTerm]);
 
   const handleAddNew = () => {
     setEditing(null);

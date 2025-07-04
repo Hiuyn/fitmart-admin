@@ -51,20 +51,6 @@ const UserList = ({ users, onEdit, onDelete }) => {
       sorter: (a, b) => a.role.localeCompare(b.role),
     },
     {
-      title: 'Quyền',
-      dataIndex: 'permissions',
-      key: 'permissions',
-      render: (permissions) => (
-        <Space wrap>
-          {permissions?.map((per) => (
-            <Tag color="geekblue" key={per}>
-              {per}
-            </Tag>
-          ))}
-        </Space>
-      ),
-    },
-    {
       title: 'Thao tác',
       key: 'actions',
       render: (_, record) => (

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAllProductCategory } from '../../api/product-categories';
 import { render } from '@testing-library/react';
 
-const ProductList = ({ products, onEdit, onDelete }) => {
+const ProductList = ({ products, onEdit, onDelete, isAction = true }) => {
   const navigate = useNavigate();
 
   const formatPrice = (price) =>
@@ -104,7 +104,7 @@ const ProductList = ({ products, onEdit, onDelete }) => {
             icon={<EyeOutlined />}
             onClick={() => navigate(`/admin/product/${record.uuid}`)}
           />
-          <Button
+          {isAction && <Button
             color='primary'
             variant='filled'
             icon={<EditOutlined />}
@@ -112,8 +112,8 @@ const ProductList = ({ products, onEdit, onDelete }) => {
               e.stopPropagation();
               onEdit(record);
             }}
-          />
-          <Button
+          />}
+          {isAction && <Button
             color='danger'
             variant='filled'
             icon={<DeleteOutlined />}
@@ -121,7 +121,7 @@ const ProductList = ({ products, onEdit, onDelete }) => {
               e.stopPropagation();
               onDelete(record);
             }}
-          />
+          />}
         </div>
       ),
       width: 100,

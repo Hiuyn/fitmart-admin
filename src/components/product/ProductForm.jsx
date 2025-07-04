@@ -779,22 +779,7 @@ const ProductForm = ({ product, isModalOpen, onSave, onCancel }) => {
                             </Tag>
                           ))}
                         </Form.Item>
-                          {/* {record.combination?.map((item, index) => (
-                            // <pre>{item}</pre>
-                            <Tag color="blue" key={index}>
-                              {item}
-                            </Tag>
-                          ))} */}
                         </>
-                        // <span>
-                        //   {record?.combination}
-                        //   {/* {variantTable[index]?.combination?.map((val, idx) => (
-                        //     <>
-                        //     <pre>{val}</pre>
-                        //     <Tag key={idx} color="blue">{val}</Tag>
-                        //     </>
-                        //   ))} */}
-                        // </span>
                       )
                     }
                   ]}

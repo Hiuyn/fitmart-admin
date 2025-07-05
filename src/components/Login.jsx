@@ -25,8 +25,6 @@ const Login = ({ setCurrentPage }) => {
     if (email === 'admin' && password === 'password') {
       alert('Login successful!');
       
-    } else {
-      setError('Invalid credentials');
     }
 
     try {
@@ -40,10 +38,6 @@ const Login = ({ setCurrentPage }) => {
           password: password,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Invalid credentials');
-      }
 
       const data = await response.json();
 

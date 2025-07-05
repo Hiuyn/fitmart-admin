@@ -5,14 +5,14 @@ import DeleteConfirmation from '../DeleteConfirmation';
 import { getAllProductOptions, getProductVariants } from '../../api/products';
 import { notification } from 'antd';
 
-const token = localStorage.getItem('token');
-const getHeaders = () => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  });
 
 const Product = () => {
   // Dữ liệu mẫu
+  const token = localStorage.getItem('token');
+  const getHeaders = () => ({
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    });
   const sampleProducts = [];
 
 

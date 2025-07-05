@@ -59,9 +59,9 @@ const Statistics = () => {
       ]);
 
       setStats({
-        totalUsers: usersData.data?.pagination.total ?? 0,
-        totalProducts: productsData?.data.pagination.total ?? 0,
-        totalOrders: ordersData.data?.pagination.total ?? 0,
+        totalUsers: usersData.data?.data.filter(item => !item.deleted_at).length ?? 0,
+        totalProducts: productsData?.data.data.filter(item => !item.deleted_at).length ?? 0,
+        totalOrders: ordersData.data?.data.filter(item => !item.deleted_at).length ?? 0,
         totalRevenue: ordersData.data?.data.reduce((sum, order) => sum + order.total_fee, 0) ?? 0
       });
 

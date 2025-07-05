@@ -39,10 +39,6 @@ const Register = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Invalid credentials');
-      }
-
       const data = await response.json();
 
       // Assuming your API returns a token
